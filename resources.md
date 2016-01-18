@@ -8,3 +8,6 @@
 ## projects
 - cjdns mesh protocol: https://hyperboria.net/
 - ipfs distributed, content-addressed file system: https://github.com/ipfs/ipfs
+
+## useful links
+-seems like a good simulator? : https://github.com/fnss/fnss
