@@ -14,3 +14,4 @@
 
 ## algorithm part
 http://www.ee.ucl.ac.uk/~uceeips/hashroute-icn13.pdf  -  Simple Hash-routing schemes which might be useful!(I think cutting up a large network into small netwoks by assign roles to a portion of the nodes could be useful for ou puposes.)
+Introduction to Distributed Algorithms by Gerard Tel - Book in the library on distributed algorithms (including things on routing).
