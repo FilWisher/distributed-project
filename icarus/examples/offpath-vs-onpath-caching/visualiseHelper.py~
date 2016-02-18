@@ -1,0 +1,29 @@
+import sys
+import pickle
+
+#set the environment variables to let icarus get imported
+if "C:\\home\hugh\icarusTest" not in sys.path:
+    print sys.path
+    sys.path.append("/home/hugh/icarusTest")
+
+import icarus
+
+
+def unPickle(path):
+    '''
+    returns the structured results object from results.pickle file - 
+    tuple in the form (metadata, results), both dictionaries
+    '''
+    resFile = open(path)
+    return pickle.load(resFile)
+
+
+#ans = unPickle("results.pickle")
+
+def pullTopology(path):
+    '''
+    returns structured fnss topology object as it integrates with icarus
+    allows for reading of edge/node information
+    including 'stack' values such as cache capability as determined by icarus
+    '''
+
