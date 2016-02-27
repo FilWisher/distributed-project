@@ -5,6 +5,8 @@ For distributed group project
 
 
 /  
-└ [resources.md](https://github.com/FilWisher/distributed-project/blob/master/resources.md) [1]
+└ [resources.md](https://github.com/FilWisher/distributed-project/blob/master/resources.md) [1]    
+└ [resources/](https://github.com/FilWisher/distributed-project/tree/master/resources) [2]
 
-[1] - List of background reading resources 
+[1] - List of background reading resources    
+[2] - PDFs of useful papers
