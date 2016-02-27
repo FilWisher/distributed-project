@@ -24,6 +24,7 @@ __all__ = [
     'LinkLoadCollector',
     'LatencyCollector',
     'PathStretchCollector',
+    'BulkDataCollector',
     'TestCollector'
            ]
 
@@ -552,3 +553,54 @@ class TestCollector(DataCollector):
         return self.session
 
     
+
+@register_data_collector('BULK_DATA')
+class BulkDataCollector(DataCollector):
+    """Data collector which outputs complete trees of events 
+    """
+    
+    def __init__(self, view, sr=10):
+        """Constructor
+        
+        Parameters
+        ----------
+        view : NetworkView
+            The network view instance
+        sr : int
+            Size ratio. The average ratio between the size of the content data
+            and the request data. For example, if sr = x, then it means that
+            the average size of a content is x times the size of a request.
+        """
+        self.view = view
+        self.req_count = collections.defaultdict(int)
+        self.cont_count = collections.defaultdict(int)
+        self.req_timeline = collections.defaultdict(int) #all events keyd by event counter
+        self.req_event_count = 0 #counter to keep track of events
+        if sr <= 0:
+            raise ValueError('sr must be positive')
+        self.sr = sr
+        self.t_start = -1
+        self.t_end = 1
+    
+    @inheritdoc(DataCollector)
+    def start_session(self, timestamp, receiver, content):
+        if self.t_start < 0:
+            self.t_start = timestamp
+        self.t_end = timestamp
+    
+    @inheritdoc(DataCollector)
+    def request_hop(self, u, v, main_path=True):
+        self.req_timeline[self.req_event_count] = (u, v)
+        self.req_event_count += 1
+        self.req_count[(u, v)] += 1
+    
+    @inheritdoc(DataCollector)
+    def content_hop(self, u, v, main_path=True):
+        self.cont_count[(u, v)] += 1
+    
+    @inheritdoc(DataCollector)
+    def results(self):
+        duration = self.t_end - self.t_start
+       
+        return Tree({'CONTENT_HOP_COUNT_PER_EDGE': self.cont_count, 'REQUESTS_COUNT_PER_EDGE': self.req_count, 
+                     'ALL_REQUESTS': self.req_timeline})

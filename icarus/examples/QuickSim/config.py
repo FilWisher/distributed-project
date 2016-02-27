@@ -11,11 +11,11 @@ PARALLEL_EXECUTION = True
 N_PROCESSES = cpu_count()
 CACHING_GRANULARITY = 'OBJECT'
 RESULTS_FORMAT = 'PICKLE'
-N_REPLICATIONS = 2
+N_REPLICATIONS = 1
 
 # List of metrics to be measured in the experiments
 # The implementation of data collectors are located in ./icaurs/execution/collectors.py
-DATA_COLLECTORS = ['CACHE_HIT_RATIO', 'LATENCY', 'LINK_LOAD', 'PATH_STRETCH']
+DATA_COLLECTORS = ['CACHE_HIT_RATIO', 'LATENCY', 'LINK_LOAD', 'PATH_STRETCH', 'BULK_DATA']
 ALPHA = [0.6]
 # Total size of network cache as a fraction of content population
 NETWORK_CACHE = [0.004]
@@ -38,7 +38,7 @@ TOPOLOGIES =  [
 # The code is located in ./icarus/models/strategy.py
 STRATEGIES = [
      'LCE',             # Leave Copy Everywhere
-     'NO_CACHE',        # No caching, shorest-path routing
+             # No caching, shorest-path routing
              ]
 CACHE_POLICY = 'LRU'
 

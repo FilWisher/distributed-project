@@ -37,6 +37,17 @@ def jsonDumper(path):
     f.write(unpickle)
     return
 
+def jsonDumperForLarge(path):
+
+    resFile = open(path)
+    unpickle = pickle.load(resFile)
+
+    unpickle = jsonpickle.encode(unpickle[0])
+
+    f = open("jsonDump.json", "w+")
+    f.write(unpickle)
+    return
+
 
 
 def pullTopology():
