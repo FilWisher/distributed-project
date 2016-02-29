@@ -1,5 +1,8 @@
 language: node_js
 node_js: "5.3"
-script: npm test
+script: npm run cover
 before_install:
   - cd visualization
+addons:
+  code_climate:
+    repo_token: a7eedabcadb0a6d386326ec94f9ea7709d33c38f075b822739323a8e6d9150e6
