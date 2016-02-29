@@ -14,7 +14,9 @@ For distributed group project
 [3] - Example json files for d3   
 [4] - icarus simulator 
 
-## setup
+## development
+
+### setup
 
 Make sure you have nodejs and npm installed.
 
@@ -28,3 +30,17 @@ To run tests: ```npm test```
 To get coverage report: ```npm run coverage```
 To build app: ```npm run build```
 Or to build app continuously: ```npm run build:w```
+
+### workflow
+
+Open visualization/assets/index.html
+   , visualization/assets/main.js
+   , visualization/test/tests.js
+   
+Run ```npm start``` from visualization/assets
+Run ```npm build:w``` from visualization
+
+Write changes into visualization/assets/main.js
+Write tests into visualization/tests/test.js
+
+Before you commit, run ```npm run cover``` to check coverage reports
