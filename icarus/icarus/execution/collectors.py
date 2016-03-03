@@ -127,6 +127,9 @@ class DataCollector(object):
             calculate latency correctly in multicast cases
         """
         pass
+        
+    def all_sources(self, timestamp, a, receiver):
+        pass
     
     def end_session(self, success=True):
         """Reports that the session is closed, i.e. the content has been
@@ -164,7 +167,7 @@ class CollectorProxy(DataCollector):
     """
     
     EVENTS = ('start_session', 'end_session', 'cache_hit', 'cache_miss', 'server_hit',
-              'request_hop', 'content_hop', 'results')
+              'request_hop', 'content_hop', 'all_sources', 'results')
     
     def __init__(self, view, collectors):
         """Constructor
@@ -184,6 +187,13 @@ class CollectorProxy(DataCollector):
     def start_session(self, timestamp, receiver, content):
         for c in self.collectors['start_session']:
             c.start_session(timestamp, receiver, content)
+        
+        #if bulk collector is present this will get a dic of all data held at the start
+        if(content == 1):
+            for c in self.collectors['all_sources']:
+                #dic = self.view.all_data_sources()
+                dic = self.view.content_locations(1)
+                c.all_sources(timestamp, dic, receiver)
     
     @inheritdoc(DataCollector)
     def cache_hit(self, node):
@@ -571,7 +581,11 @@ class BulkDataCollector(DataCollector):
             and the request data. For example, if sr = x, then it means that
             the average size of a content is x times the size of a request.
         """
+        self.flag = False
         self.view = view
+        self.all_sources_dic = {}
+        self.current_sess_data = []
+        self.current_sess_key = -1
         self.req_count = collections.defaultdict(int)
         self.cont_count = collections.defaultdict(int)
         self.req_timeline = collections.defaultdict(int) #all events keyd by event counter
@@ -584,23 +598,43 @@ class BulkDataCollector(DataCollector):
     
     @inheritdoc(DataCollector)
     def start_session(self, timestamp, receiver, content):
+        if content != 1:
+            self.flag = False
+        else:
+            self.flag = True
+
         if self.t_start < 0:
             self.t_start = timestamp
         self.t_end = timestamp
     
     @inheritdoc(DataCollector)
     def request_hop(self, u, v, main_path=True):
-        self.req_timeline[self.req_event_count] = (u, v)
+        #self.req_timeline[self.req_event_count] = (u, v)
         self.req_event_count += 1
         self.req_count[(u, v)] += 1
     
     @inheritdoc(DataCollector)
     def content_hop(self, u, v, main_path=True):
         self.cont_count[(u, v)] += 1
+        self.current_sess_data.append((u,v))
     
+    @inheritdoc(DataCollector)
+    def all_sources(self, timestamp, a, receiver):
+        self.current_sess_key = timestamp - self.t_start
+        self.current_sess_data.append((receiver,a))
+
+    @inheritdoc(DataCollector)
+    def end_session(self, success=True):
+        if self.flag == True:
+            self.all_sources_dic[self.current_sess_key] = self.current_sess_data
+        self.current_sess_data = []
+        
+
     @inheritdoc(DataCollector)
     def results(self):
         duration = self.t_end - self.t_start
        
-        return Tree({'CONTENT_HOP_COUNT_PER_EDGE': self.cont_count, 'REQUESTS_COUNT_PER_EDGE': self.req_count, 
-                     'ALL_REQUESTS': self.req_timeline})
+        return Tree({'CONTENT_HOP_COUNT_PER_EDGE': self.cont_count, 
+                     'REQUESTS_COUNT_PER_EDGE': self.req_count, 
+                     'ALL_REQUESTS': self.req_timeline, 
+                     'ALL_SOURCES' : self.all_sources_dic})

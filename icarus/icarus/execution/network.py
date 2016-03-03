@@ -75,6 +75,11 @@ class NetworkView(object):
             raise ValueError('The model argument must be an instance of '
                              'NetworkModel')
         self.model = model
+
+    def all_data_sources(self):
+        """Return the dictionary of all content locations"""
+        dic = self.model.content_source
+        return dic
     
     def content_locations(self, k):
         """Return a set of all current locations of a specific content.

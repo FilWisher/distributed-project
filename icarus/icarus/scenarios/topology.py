@@ -458,7 +458,6 @@ def topology_garr2(**kwargs):
             topology.edge[u][v]['type'] = 'internal'
     return IcnTopology(topology)
 
-
 @register_topology_factory('GEANT_2')
 def topology_geant2(**kwargs):
     """Return a scenario based on GEANT topology.
@@ -669,3 +668,63 @@ def topology_rocketfuel_latency(asn, source_ratio=0.1, ext_delay=EXTERNAL_LINK_D
         fnss.add_stack(topology, v, 'router')
     return IcnTopology(topology)
     
+@register_topology_factory('SIX_NODE')
+def topology_fiveNode(**kwargs):
+    """Return a scenario based on Five_Node topology.
+    
+    This functions the similar as the GEANT topology but with only 5 nodes
+    All routers are given caches
+    Sources are added on initilization in addition to the main network to all
+    nodes with 2 connections
+     
+    Parameters
+    ----------
+    seed : int, optional
+        The seed used for random number generation
+        
+    Returns
+    -------
+    topology : fnss.Topology
+        The topology object
+    """
+    # 5 nodes
+    topology = fnss.parse_topology_zoo(path.join(TOPOLOGY_RESOURCES_DIR,
+                                                 'SixNode.graphml')
+                                       ).to_undirected()
+    topology = list(nx.connected_component_subgraphs(topology))[0]
+    deg = nx.degree(topology)
+    receivers = [v for v in topology.nodes() if deg[v] == 1] # 8 nodes
+    # attach sources to topology
+    source_attachments = [v for v in topology.nodes() if deg[v] == 2] # 13 nodes
+    sources = []
+    for v in source_attachments:
+        u = v + 1000 # node ID of source
+        topology.add_edge(v, u)
+        sources.append(u)
+    routers = [v for v in topology.nodes() if v not in sources + receivers]
+    # Put caches in nodes with top betweenness centralities
+    betw = nx.betweenness_centrality(topology)
+    routers = sorted(routers, key=lambda k: betw[k])
+    # Select as ICR candidates all routers
+    icr_candidates = routers 
+    # add stacks to nodes
+    topology.graph['icr_candidates'] = set(icr_candidates)
+    for v in sources:
+        fnss.add_stack(topology, v, 'source')
+    for v in receivers:
+        fnss.add_stack(topology, v, 'receiver')
+    for v in routers:
+        fnss.add_stack(topology, v, 'router')
+    # set weights and delays on all links
+    fnss.set_weights_constant(topology, 1.0)
+    fnss.set_delays_constant(topology, INTERNAL_LINK_DELAY, 'ms')
+    # label links as internal or external
+    for u, v in topology.edges_iter():
+        if u in sources or v in sources:
+            topology.edge[u][v]['type'] = 'external'
+            # this prevents sources to be used to route traffic
+            fnss.set_weights_constant(topology, 1000.0, [(u, v)])
+            fnss.set_delays_constant(topology, EXTERNAL_LINK_DELAY, 'ms', [(u, v)])
+        else:
+            topology.edge[u][v]['type'] = 'internal'
+    return IcnTopology(topology)
