@@ -339,6 +339,12 @@ class NetworkModel(object):
         # The actual cache objects storing the content
         self.cache = {node: CACHE_POLICY[policy_name](self.cache_size[node], **policy_args)
                           for node in self.cache_size}
+ 
+	# store neighbours as dictionary of lists, also importing methods from networkx.
+	self.neighbours = {}	
+	for n in self.cache:
+            self.neighbours[n] = nx.neighbors(topology,n)
+
 
 
 class NetworkController(object):
@@ -549,5 +555,13 @@ class NetworkController(object):
     
     def restore_node(self, v):
         raise NotImplementedError('Method not yet implemented')
+
+    def check_popularity_table(self, v):
+	if v in self.model.cache:
+	    if self.model.cache[v].compare_count(self.session['content']):
+    	        adj = self.model.neighbours[v]
+    	        for adj_nodes in adj:
+	            if adj_nodes in self.model.cache:
+	    	        self.put_content(adj_nodes)
     
 

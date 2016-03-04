@@ -27,6 +27,8 @@ __all__ = [
        'RandomBernoulli',
        'RandomChoice',
        'NearestReplicaRouting',
+       'WingLizaAlgo',
+       'Popularity_Table'
            ]
 
 #TODO: Implement BaseOnPath to reduce redundant code
@@ -808,6 +810,98 @@ class RandomChoice(Strategy):
             if self.view.has_cache(v):
                 if self.controller.get_content(v):
                     serving_node = v
+                    break
+        else:
+            # No cache hits, get content from source
+            self.controller.get_content(v)
+            serving_node = v
+        # Return content
+        path =  list(reversed(self.view.shortest_path(receiver, serving_node)))
+        caches = [v for v in path[1:-1] if self.view.has_cache(v)]
+        designated_cache = random.choice(caches) if len(caches) > 0 else None
+        for u, v in path_links(path):
+            self.controller.forward_content_hop(u, v)
+            if v == designated_cache:
+                self.controller.put_content(v)
+        self.controller.end_session() 
+@register_strategy('WING_LIZA_ALGO')
+class WingLizaAlgo(Strategy):
+    """ Wing and Lizas Algorithm
+    his strategy integrates ProbCache and LCD for experimental uses.
+    """
+
+    @inheritdoc(Strategy)
+    def __init__(self, view, controller, t_tw=10):
+        super(WingLizaAlgo, self).__init__(view, controller)
+        self.t_tw=t_tw**kwargs
+        self.cache_size = view.cache_nodes(size=True)
+
+    @inheritdoc(Strategy)
+    def process_event(self, time, receiver, content, log):
+        # get all required data
+        source = self.view.content_source(content)
+        path = self.view.shortest_path(receiver, source)
+        # Route requests to original source and queries caches on the path
+        self.controller.start_session(time, receiver, content, log)
+        for u, v in path_links(path):
+            self.controller.forward_request_hop(u, v)
+            if self.view.has_cache(v):
+                if self.controller.get_content(v):
+                    serving_node = v
+                    break
+        else:
+            # No cache hits, get content from source
+            self.controller.get_content(v)
+            serving_node = v
+        # Return content
+        path = list(reversed(self.view.shortest_path(receiver, serving_node)))
+        # Leave a copy of the content only in the cache one level down the hit
+        # caching node
+        copied = False
+	x = 0.0        
+	c = len([v for v in path if self.view.has_cache(v)])	
+	for hop in range(1,len(path)):
+            u = path[hop-1]
+            v = path[hop]
+	    N = sum([self.cache_size[n] for n in path[hop - 1:]
+                     if n in self.cache_size])
+	    if v in self.cache_size:
+		x += 1
+            self.controller.forward_content_hop(u, v)
+            if not copied and v != receiver and self.view.has_cache(v):
+		prob_cache = float(N)/(self.t_tw * self.cache_size[v])*(x/c)**c               
+		if random.random() < prob_cache:		
+			self.controller.put_content(v)
+                	copied = True
+        self.controller.end_session()
+
+@register_strategy('POPULARITY_TABLE')
+class Popularity_Table(Strategy):
+    """
+    This strategy caches to adjacent nodes if a certain number of requests pass the threshold.
+
+	The strategy/process is similar to any other methods. The only difference is I called check_popularty_table in network controller to implement checking & caching.
+    """
+    @inheritdoc(Strategy)
+    def __init__(self, view, controller, **kwargs):
+        super(Popularity_Table, self).__init__(view, controller)
+        self.cache_size = view.cache_nodes(size=True)    
+    
+
+    @inheritdoc(Strategy)
+    def process_event(self, time, receiver, content, log):
+        # get all required data
+        source = self.view.content_source(content)
+        path = self.view.shortest_path(receiver, source)
+        # Route requests to original source and queries caches on the path
+        self.controller.start_session(time, receiver, content, log)
+        for u, v in path_links(path):
+            self.controller.forward_request_hop(u, v)
+            if self.view.has_cache(v):
+	        self.controller.check_popularity_table(v)
+                if self.controller.get_content(v):
+                    serving_node = v
+		    
                     break
         else:
             # No cache hits, get content from source
