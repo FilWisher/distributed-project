@@ -194,6 +194,7 @@ class CollectorProxy(DataCollector):
                 #dic = self.view.all_data_sources()
                 dic = self.view.content_locations(1)
                 c.all_sources(timestamp, dic, receiver)
+
     
     @inheritdoc(DataCollector)
     def cache_hit(self, node):
@@ -566,7 +567,9 @@ class TestCollector(DataCollector):
 
 @register_data_collector('BULK_DATA')
 class BulkDataCollector(DataCollector):
-    """Data collector which outputs complete trees of events 
+    """
+    Data collector which outputs complete trees of events 
+    WARNING - LARGE FILE CREATED
     """
     
     def __init__(self, view, sr=10):
@@ -576,18 +579,12 @@ class BulkDataCollector(DataCollector):
         ----------
         view : NetworkView
             The network view instance
-        sr : int
-            Size ratio. The average ratio between the size of the content data
-            and the request data. For example, if sr = x, then it means that
-            the average size of a content is x times the size of a request.
         """
         self.flag = False
         self.view = view
         self.all_sources_dic = {}
         self.current_sess_data = []
         self.current_sess_key = -1
-        self.req_count = collections.defaultdict(int)
-        self.cont_count = collections.defaultdict(int)
         self.req_timeline = collections.defaultdict(int) #all events keyd by event counter
         self.req_event_count = 0 #counter to keep track of events
         if sr <= 0:
@@ -606,17 +603,6 @@ class BulkDataCollector(DataCollector):
         if self.t_start < 0:
             self.t_start = timestamp
         self.t_end = timestamp
-    
-    @inheritdoc(DataCollector)
-    def request_hop(self, u, v, main_path=True):
-        #self.req_timeline[self.req_event_count] = (u, v)
-        self.req_event_count += 1
-        self.req_count[(u, v)] += 1
-    
-    @inheritdoc(DataCollector)
-    def content_hop(self, u, v, main_path=True):
-        self.cont_count[(u, v)] += 1
-        self.current_sess_data.append((u,v))
     
     @inheritdoc(DataCollector)
     def all_sources(self, timestamp, a, receiver):
@@ -638,3 +624,27 @@ class BulkDataCollector(DataCollector):
                      'REQUESTS_COUNT_PER_EDGE': self.req_count, 
                      'ALL_REQUESTS': self.req_timeline, 
                      'ALL_SOURCES' : self.all_sources_dic})
+
+    
+
+@register_data_collector('TOPOLOGY')
+class TopologyCollector(DataCollector):
+    """
+    Includes the topology object in the results
+    Accessible to the results writer functions
+    """
+    
+    def __init__(self, view, sr=10):
+        """Constructor
+        
+        Parameters
+        ----------
+        view : NetworkView
+            The network view instance
+        """
+
+        self.topology = view.topology() #fnss topology object
+    
+    @inheritdoc(DataCollector)
+    def results(self):
+        return Tree({'TOPOLOGY': self.topology})
