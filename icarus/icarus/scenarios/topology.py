@@ -64,21 +64,24 @@ class IcnTopology(fnss.Topology):
             Dictionary mapping node identifiers and cache size
         """
 	
-
-	#TODO: Integrate this with cache_nodes to give caching capabilities to source_nodes
-	""""I DONT KNOW HOW TO INTEGRATE THIS WITH CACHE_NDOES"""
-	source_nodes = {}
-	for s in self.sources():
-	    self.source_nodes[s]['stack'][0] = self.node[s]['stack'][1][1]
-
-	""""END OF THIS PART--------------------------------------------------------------"""   
-
-	return {v: self.node[v]['stack'][1]['cache_size']
+	source_nodes = {v: self.node[v]['stack'][0]
+		for v in self
+                if 'stack' in self.node[v]
+                and 'source' in self.node[v]['stack'][0]
+		}
+	
+	cache_nodes = {v: self.node[v]['stack'][1]['cache_size']
                 for v in self
                 if 'stack' in self.node[v]
                 and 'cache_size' in self.node[v]['stack'][1]
                 }
-        
+
+	cache_or_source = dict(source_nodes, **cache_nodes)
+
+	for n in cache_or_source:
+	    print n
+	return cache_or_source
+       
     def sources(self):
         """Return a set of source nodes
         

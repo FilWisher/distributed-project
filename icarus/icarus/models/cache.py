@@ -1891,7 +1891,7 @@ class Popularity_Table(Cache):
     def __init__(self, maxlen, **kwargs):
         self._counter = {}
 	self._cache = set()
-        self.threshold = 50
+        self.threshold = 500
 	self.t = 0
         self._maxlen = int(maxlen)
         if self._maxlen <= 0:

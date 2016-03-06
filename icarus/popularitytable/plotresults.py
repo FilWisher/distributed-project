@@ -45,15 +45,14 @@ PLOT_EMPTY_GRAPHS = True
 # On-path strategies: dashed lines
 # No-cache: dotted line
 STRATEGY_STYLE = {
-         'POPULARITY_TABLE':'b-o',
-	 'HR_SYMM':         'b-o',
+         'HR_SYMM':         'b-o',
          'HR_ASYMM':        'g-D',
          'HR_MULTICAST':    'm-^',         
          'HR_HYBRID_AM':    'c-s',
          'HR_HYBRID_SM':    'r-v',
          'LCE':             'b--p',
          'LCD':             'g-->',
-         'CL4M':            'g-->',
+         'POPULARITY_TABLE':'g-->',
          'PROB_CACHE':      'c--<',
          'RAND_CHOICE':     'r--<',
          'RAND_BERNOULLI':  'g--*',
@@ -65,13 +64,12 @@ STRATEGY_STYLE = {
 STRATEGY_LEGEND = {
          'LCE':             'LCE',
          'LCD':             'LCD',
-         'POPULARITY_TABLE':'POP',
-	 'HR_SYMM':         'HR Symm',
+         'HR_SYMM':         'HR Symm',
          'HR_ASYMM':        'HR Asymm',
          'HR_MULTICAST':    'HR Multicast',         
          'HR_HYBRID_AM':    'HR Hybrid AM',
          'HR_HYBRID_SM':    'HR Hybrid SM',
-         'CL4M':            'CL4M',
+         'POPULARITY_TABLE':'POP',
          'PROB_CACHE':      'ProbCache',
          'RAND_CHOICE':     'Random (choice)',
          'RAND_BERNOULLI':  'Random (Bernoulli)',
@@ -81,21 +79,21 @@ STRATEGY_LEGEND = {
 
 # Color and hatch styles for bar charts of cache hit ratio and link load vs topology
 STRATEGY_BAR_COLOR = {
-    'LCE':          'k',
-    'LCD':          '0.4',
-    'NO_CACHE':     '0.5',
-    'HR_ASYMM':     '0.6',
-    'HR_SYMM':      '0.7',
+    'LCE':              'k',
+    'LCD':              '0.4',
+    'NO_CACHE':         '0.5',
+    'HR_ASYMM':         '0.6',
+    'HR_SYMM':          '0.7',
     'POPULARITY_TABLE': '0.8',
     }
 
 STRATEGY_BAR_HATCH = {
-    'LCE':          None,
-    'LCD':          '//',
-    'NO_CACHE':     'x',
-    'HR_ASYMM':     '+',
-    'HR_SYMM':      '\\',
-    'POPULARITY_TABLE': '\\'
+    'LCE':              None,
+    'LCD':              '//',
+    'NO_CACHE':         'x',
+    'HR_ASYMM':         '+',
+    'HR_SYMM':          '\\',
+    'POPULARITY_TABLE': '||',
     }
 
 

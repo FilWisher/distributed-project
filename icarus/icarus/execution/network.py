@@ -321,11 +321,18 @@ class NetworkModel(object):
         for node in topology.nodes_iter():
             stack_name, stack_props = fnss.get_stack(topology, node)
             if stack_name == 'router':
-                if 'cache_size' in stack_props:
+		if 'cache_size' in stack_props:
                     self.cache_size[node] = stack_props['cache_size']
+		    #print "router node:"
+		    #print node
             elif stack_name == 'source':
+		#print "cache node application's name:"
+		#print fnss.get_application_names(topology, node)
+		#print "content node:"
+		#print node
                 contents = stack_props['contents']
-                for content in contents:
+		self.cache_size[node] = 1                
+		for content in contents:
                     self.content_source[content] = node
         if any(c < 1 for c in self.cache_size.values()):
             logger.warn('Some content caches have size equal to 0. '
@@ -340,6 +347,9 @@ class NetworkModel(object):
         self.cache = {node: CACHE_POLICY[policy_name](self.cache_size[node], **policy_args)
                           for node in self.cache_size}
  
+	#print "all the actual cache objects storing the contents" 	
+	#for node in self.cache:
+	#    print (node, self.cache_size[node])
 	# store neighbours as dictionary of lists, also importing methods from networkx.
 	self.neighbours = {}	
 	for n in self.cache:
@@ -563,5 +573,6 @@ class NetworkController(object):
     	        for adj_nodes in adj:
 	            if adj_nodes in self.model.cache:
 	    	        self.put_content(adj_nodes)
+	#TODO: try to implement this in strategy for clarity and consistency
     
 
