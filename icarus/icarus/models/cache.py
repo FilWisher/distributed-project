@@ -13,7 +13,6 @@ import numpy as np
 from icarus.util import inheritdoc
 from icarus.registry import register_cache_policy
 
-
 __all__ = [
         'LinkedSet',
         'Cache',
@@ -29,6 +28,7 @@ __all__ = [
         'rand_insert_cache',
         'keyval_cache',
         'ttl_cache',
+	'Popularity_Table'
            ]
 
 
@@ -97,7 +97,7 @@ class LinkedSet(object):
         Returns
         -------
         reversed : iterator
-            An iterator over the set
+            An iterator over the set! I added some tests for additional options to the results collector modules over the weekend and that seems to work fine. My memory was that the caching file looked similar in l
         """
         cur = self._top
         while cur:
@@ -1384,7 +1384,7 @@ class RandEvictionCache(Cache):
     In case of stationary IRM workloads, the RAND eviction policy provably
     achieves the same cache hit ratio of the FIFO replacement policy. 
     """
-    
+   
     @inheritdoc(Cache)
     def __init__(self, maxlen, **kwargs):
         self._maxlen = int(maxlen)
@@ -1872,3 +1872,100 @@ def ttl_cache(cache, f_time):
 
 def ttl_keyval_cache():
     pass
+
+"""---------------------Popularity Table----------------------------------------------"""
+@register_cache_policy('POPULARITY_TABLE')
+class Popularity_Table(Cache):
+    """PopularityTable's implementation
+	   
+	Self-explanatory but we can always refer to the original MPC paper.
+	
+	Here I have only implemented some low-level operation on the POPULARITY_TABLE object itself.
+	The actual algorithm will be implemented in strategy.py
+
+
+	#TODO: Need to implement popularity table in the source nodes as well, or else no caching will be performed.
+    """
+    
+    @inheritdoc(Cache)
+    def __init__(self, maxlen, **kwargs):
+        self._counter = {}
+	self._cache = set()
+        self.threshold = 500
+	self.t = 0
+        self._maxlen = int(maxlen)
+        if self._maxlen <= 0:
+            raise ValueError('maxlen must be positive')
+
+    """------------------------METHODS SPECIFIC FOR POPULARITY TABLE---------------------"""
+    @inheritdoc(Cache)
+    def get(self, k):
+        self.t += 1
+        if k in self._counter:
+            freq, t = self._counter[k]
+            self._counter[k] = freq + 1, t
+        else:
+            self._counter[k] = 1, self.t
+        if self.has(k):
+            return True
+        else:
+            return False
+
+    def compare_count(self,k):
+	if not self.has_count(k):
+	    return False
+	elif self._counter[k]>self.threshold:
+	    self.remove(k)
+	    return True
+	else:
+	    return False
+   
+    """-------------------------------BASIC     METHODS------------------------------------"""
+    @inheritdoc(Cache)
+    def __len__(self):
+        return len(self._cache)
+    
+    @property
+    @inheritdoc(Cache)
+    def maxlen(self):
+        return self._maxlen
+    
+    @inheritdoc(Cache)
+    def dump(self):
+        return sorted(self._cache, key=lambda x: self._counter[x], reverse=True) 
+
+    @inheritdoc(Cache)
+    def has(self, k):
+        return k in self._cache
+
+
+    def has_count(self, k):
+	return k in self._counter
+
+    @inheritdoc(Cache)
+    def put(self, k):
+        if not self.has(k):
+            if k in self._counter:
+                freq, t = self._counter[k]
+                self._counter[k] = (freq + 1, t)
+            else:
+                self._counter[k] = (1, self.t)
+            self._cache.add(k)
+            if len(self._cache) > self._maxlen:
+                evicted = min(self._cache, key=lambda x: self._counter[x])
+                self._cache.remove(evicted)
+                return evicted
+        return None    
+
+    @inheritdoc(Cache)
+    def remove(self, k):
+        if k in self._cache:
+            self._cache.remove(k)
+            return True
+        else:
+            return False
+        
+    @inheritdoc(Cache)
+    def clear(self):
+        self._cache.clear()
+        self._counter.clear()

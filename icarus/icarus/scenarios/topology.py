@@ -63,12 +63,25 @@ class IcnTopology(fnss.Topology):
         cache_nodes : dict
             Dictionary mapping node identifiers and cache size
         """
-        return {v: self.node[v]['stack'][1]['cache_size']
+	
+	source_nodes = {v: self.node[v]['stack'][0]
+		for v in self
+                if 'stack' in self.node[v]
+                and 'source' in self.node[v]['stack'][0]
+		}
+	
+	cache_nodes = {v: self.node[v]['stack'][1]['cache_size']
                 for v in self
                 if 'stack' in self.node[v]
                 and 'cache_size' in self.node[v]['stack'][1]
                 }
-        
+
+	cache_or_source = dict(source_nodes, **cache_nodes)
+
+	for n in cache_or_source:
+	    print n
+	return cache_or_source
+       
     def sources(self):
         """Return a set of source nodes
         
