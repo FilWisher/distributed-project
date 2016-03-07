@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/FilWisher/distributed-project.svg?branch=master)](https://travis-ci.org/FilWisher/distributed-project)
+[![Build Status](https://travis-ci.org/FilWisher/distributed-project.svg?branch=master)](https://travis-ci.org/FilWisher/distributed-project)[![Test Coverage](https://codeclimate.com/github/FilWisher/distributed-project/badges/coverage.svg)](https://codeclimate.com/github/FilWisher/distributed-project/coverage)
 
 # distributed-project
 For distributed group project
