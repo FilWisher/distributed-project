@@ -24,6 +24,7 @@ __all__ = [
     'LinkLoadCollector',
     'LatencyCollector',
     'PathStretchCollector',
+    'BulkDataCollector',
     'TestCollector'
            ]
 
@@ -126,6 +127,9 @@ class DataCollector(object):
             calculate latency correctly in multicast cases
         """
         pass
+        
+    def all_sources(self, timestamp, a, receiver):
+        pass
     
     def end_session(self, success=True):
         """Reports that the session is closed, i.e. the content has been
@@ -163,7 +167,7 @@ class CollectorProxy(DataCollector):
     """
     
     EVENTS = ('start_session', 'end_session', 'cache_hit', 'cache_miss', 'server_hit',
-              'request_hop', 'content_hop', 'results')
+              'request_hop', 'content_hop', 'all_sources', 'results')
     
     def __init__(self, view, collectors):
         """Constructor
@@ -183,6 +187,14 @@ class CollectorProxy(DataCollector):
     def start_session(self, timestamp, receiver, content):
         for c in self.collectors['start_session']:
             c.start_session(timestamp, receiver, content)
+        
+        #if bulk collector is present this will get a dic of all data held at the start
+        if(content == 1):
+            for c in self.collectors['all_sources']:
+                #dic = self.view.all_data_sources()
+                dic = self.view.content_locations(1)
+                c.all_sources(timestamp, dic, receiver)
+
     
     @inheritdoc(DataCollector)
     def cache_hit(self, node):
@@ -552,3 +564,87 @@ class TestCollector(DataCollector):
         return self.session
 
     
+
+@register_data_collector('BULK_DATA')
+class BulkDataCollector(DataCollector):
+    """
+    Data collector which outputs complete trees of events 
+    WARNING - LARGE FILE CREATED
+    """
+    
+    def __init__(self, view, sr=10):
+        """Constructor
+        
+        Parameters
+        ----------
+        view : NetworkView
+            The network view instance
+        """
+        self.flag = False
+        self.view = view
+        self.all_sources_dic = {}
+        self.current_sess_data = []
+        self.current_sess_key = -1
+        self.req_timeline = collections.defaultdict(int) #all events keyd by event counter
+        self.req_event_count = 0 #counter to keep track of events
+        if sr <= 0:
+            raise ValueError('sr must be positive')
+        self.sr = sr
+        self.t_start = -1
+        self.t_end = 1
+    
+    @inheritdoc(DataCollector)
+    def start_session(self, timestamp, receiver, content):
+        if content != 1:
+            self.flag = False
+        else:
+            self.flag = True
+
+        if self.t_start < 0:
+            self.t_start = timestamp
+        self.t_end = timestamp
+    
+    @inheritdoc(DataCollector)
+    def all_sources(self, timestamp, a, receiver):
+        self.current_sess_key = timestamp - self.t_start
+        self.current_sess_data.append((receiver,a))
+
+    @inheritdoc(DataCollector)
+    def end_session(self, success=True):
+        if self.flag == True:
+            self.all_sources_dic[self.current_sess_key] = self.current_sess_data
+        self.current_sess_data = []
+        
+
+    @inheritdoc(DataCollector)
+    def results(self):
+        duration = self.t_end - self.t_start
+       
+        return Tree({'CONTENT_HOP_COUNT_PER_EDGE': self.cont_count, 
+                     'REQUESTS_COUNT_PER_EDGE': self.req_count, 
+                     'ALL_REQUESTS': self.req_timeline, 
+                     'ALL_SOURCES' : self.all_sources_dic})
+
+    
+
+@register_data_collector('TOPOLOGY')
+class TopologyCollector(DataCollector):
+    """
+    Includes the topology object in the results
+    Accessible to the results writer functions
+    """
+    
+    def __init__(self, view, sr=10):
+        """Constructor
+        
+        Parameters
+        ----------
+        view : NetworkView
+            The network view instance
+        """
+
+        self.topology = view.topology() #fnss topology object
+    
+    @inheritdoc(DataCollector)
+    def results(self):
+        return Tree({'TOPOLOGY': self.topology})
