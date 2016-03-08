@@ -1,2 +1,4 @@
 exclude_paths:
   - icarus/*
+Python: false
+Javascript: true

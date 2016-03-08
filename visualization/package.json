@@ -6,7 +6,7 @@
   "scripts": {
     "test": "tape test/test.js",
     "cover": "istanbul cover tape test/test.js && istanbul check-coverage --functions 90 --branches 90 --statements 90 --lines 90",
-    "travis": "npm run cover && codeclimate-test-reporter < coverage/lcov.info",
+    "report": "codeclimate-test-reporter < coverage/lcov.info",
     "build": "browserify assets/main.js > assets/bundle.js",
     "build:w": "watchify assets/main.js -o assets/bundle.js",
     "start": "http-server assets"
