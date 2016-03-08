@@ -509,19 +509,21 @@ class NetworkController(object):
         content : bool
             True if the content is available, False otherwise
         """
-        if node in self.model.cache:
-            cache_hit = self.model.cache[node].get(self.session['content'])
-            if cache_hit:
-                if self.session['log']:
-                    self.collector.cache_hit(node)
-            else:
-                if self.session['log']:
-                    self.collector.cache_miss(node)
-            return cache_hit
         name, props = fnss.get_stack(self.model.topology, node)
-        if name == 'source' and self.session['content'] in props['contents']:
-            if self.collector is not None and self.session['log']:
-                self.collector.server_hit(node)
+        if node in self.model.cache:
+            #here
+	    if name == 'source' and self.session['content'] in props['contents']:
+	        if self.collector is not None and self.session['log']:
+	            self.collector.server_hit(node)
+	    elif name == 'router':
+	        cache_hit = self.model.cache[node].get(self.session['content'])
+                if cache_hit:
+                    if self.session['log']:
+                        self.collector.cache_hit(node)
+                else:
+                    if self.session['log']:
+                        self.collector.cache_miss(node)
+                return cache_hit
             return True
         else:
             return False

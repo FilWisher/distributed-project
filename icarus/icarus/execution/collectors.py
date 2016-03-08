@@ -12,6 +12,8 @@ inheriting from the `DataCollector` class and override all required methods.
 from __future__ import division
 import collections
 
+import fnss
+
 from icarus.registry import register_data_collector
 from icarus.tools import cdf
 from icarus.util import Tree, inheritdoc
@@ -401,6 +403,10 @@ class CacheHitRatioCollector(DataCollector):
     def results(self):
         n_sess = self.cache_hits + self.serv_hits
         hit_ratio = self.cache_hits/n_sess
+	print "cache_hits is:"	
+	print self.cache_hits
+	print "serv_hits:"
+	print self.serv_hits
         results = Tree(**{'MEAN': hit_ratio})
         if self.off_path_hits:
             results['MEAN_OFF_PATH'] = self.off_path_hit_count/n_sess

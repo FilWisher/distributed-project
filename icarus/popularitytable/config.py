@@ -30,7 +30,7 @@ RESULTS_FORMAT = 'PICKLE'
 
 # Number of times each experiment is replicated
 # This is necessary for extracting confidence interval of selected metrics
-N_REPLICATIONS = 2
+N_REPLICATIONS = 1
 
 # List of metrics to be measured in the experiments
 # The implementation of data collectors are located in ./icaurs/execution/collectors.py
@@ -48,24 +48,24 @@ DATA_COLLECTORS = ['CACHE_HIT_RATIO', 'LATENCY', 'LINK_LOAD', 'PATH_STRETCH']
 # This would give problems while trying to plot the results because if for
 # example I wanted to filter experiment with alpha=0.8, experiments with
 # alpha = 0.799999999999 would not be recognized 
-ALPHA = [0.6, 0.8, 1.0, 1.2]
+ALPHA = [0.3, 0.6]
 
 # Total size of network cache as a fraction of content population
-NETWORK_CACHE = [0.004, 0.002, 0.01, 0.05]
+NETWORK_CACHE = [0.001, 0.004]
 
 # Number of content objects
-N_CONTENTS = 3*10**3
+N_CONTENTS = 10000
 
 # Number of requests per second (over the whole network)
 NETWORK_REQUEST_RATE = 1
 
 # Number of content requests generated to prepopulate the caches
 # These requests are not logged
-N_WARMUP_REQUESTS = 3*10**3
+N_WARMUP_REQUESTS = N_CONTENTS
 
 # Number of content requests generated after the warmup and logged
 # to generate results. 
-N_MEASURED_REQUESTS = 6*10**3
+N_MEASURED_REQUESTS = 40000
 
 # List of all implemented topologies
 # Topology implementations are located in ./icarus/scenarios/topology.py
@@ -87,8 +87,8 @@ STRATEGIES = [
      #'HR_HYBRID_AM',    # Hybrid Asymm-Multicast hash-routing
      #'HR_HYBRID_SM',    # Hybrid Symm-Multicast hash-routing
      'POPULARITY_TABLE',# Most popular caching
-     #'PROB_CACHE',      # ProbCache
-     #'LCD',             # Leave Copy Down
+     'PROB_CACHE',      # ProbCache
+     'LCD',             # Leave Copy Down
      #'RAND_CHOICE',     # Random choice: cache in one random cache on path
      #'RAND_BERNOULLI',  # Random Bernoulli: cache randomly in caches on path
              ]
@@ -105,7 +105,6 @@ default['workload'] = {'name':       'STATIONARY',
                        }
 default['cache_placement']['name'] = 'UNIFORM'
 default['content_placement']['name'] = 'UNIFORM'
-default['cache_policy']['name'] = 'LRU'
 
 # Create experiments multiplexing all desired parameters
 for alpha in ALPHA:
@@ -114,6 +113,8 @@ for alpha in ALPHA:
             for network_cache in NETWORK_CACHE:
 		if strategy == 'POPULARITY_TABLE':
 		    default['cache_policy']['name'] = 'POPULARITY_TABLE'
+		else:
+		    default['cache_policy']['name'] = 'LRU'
                 experiment = copy.deepcopy(default)
                 experiment['workload']['alpha'] = alpha
                 experiment['strategy']['name'] = strategy

@@ -392,7 +392,7 @@ def plot_bar_chart(resultset, desc, filename, plotdir):
         hatch = collections.defaultdict(lambda: None)
     # Plot bars
     left = border    # left-most point of the bar about to draw
-    for i in range(len(desc['xvals'])):
+    for i in range(len(desc['xvals'])):	
         l = 0
         for x in placement:
             bottom = 0   # Bottom point of a bar. It is alway 0 if stacked is False
