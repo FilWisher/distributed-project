@@ -1,27 +1,14 @@
 {
-  "parserOptions": {
-    "ecmaVersion": 6,
-    "ecmaFeatures": {
-      "experimentalObjectRestSpread": true,
-      "jsx": true
-    },
-    "sourceType": "module"
-  },
 
   "env": {
     "es6": true,
     "node": true
   },
 
-  "plugins": [
-    "standard",
-    "promise"
-  ],
-
   "globals": {
-    "document": false,
+    "document": true,
     "navigator": false,
-    "window": false
+    "window": true
   },
 
   "rules": {
@@ -134,10 +121,5 @@
     "yield-star-spacing": [2, "both"],
     "yoda": [2, "never"],
 
-    "standard/object-curly-even-spacing": [2, "either"],
-    "standard/array-bracket-even-spacing": [2, "either"],
-    "standard/computed-property-even-spacing": [2, "even"],
-
-    "promise/param-names": 2
   }
 }

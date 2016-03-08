@@ -9,13 +9,15 @@
     "report": "codeclimate-test-reporter < coverage/lcov.info",
     "build": "browserify assets/main.js > assets/bundle.js",
     "build:w": "watchify assets/main.js -o assets/bundle.js",
-    "start": "http-server assets"
+    "start": "http-server assets",
+    "lint": "eslint assets/main.js"
   },
   "author": "",
   "license": "ISC",
   "devDependencies": {
     "browserify": "^13.0.0",
     "codeclimate-test-reporter": "^0.3.1",
+    "eslint": "^2.3.0",
     "http-server": "^0.9.0",
     "istanbul": "^0.4.2",
     "tape": "^4.4.0"
