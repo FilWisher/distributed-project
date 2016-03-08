@@ -1,4 +1,16 @@
-exclude_paths:
-  - icarus/*
-Python: false
-Javascript: true
+---
+engines:
+  duplication:
+    enabled: true
+    config:
+      languages:
+      - javascript
+  fixme:
+    enabled: true
+  eslint:
+    enabled: true
+    config:
+      config: visualization/.eslintrc
+ratings:
+  paths:
+  - "**.js"
