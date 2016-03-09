@@ -1,0 +1,46 @@
+<html>
+<head>
+  <title>A D3 chart</title>
+  <script src="../d3 source code/d3.min.js" charset="utf-8"></script>
+</head>
+<body>
+  <script>
+        var ratData = [ 400, 900, 300, 300, 900, 330 ];
+
+        var svg = d3.select( "body" )
+                  .append( "svg" )
+                    .attr( "width", 500 )
+                    .attr( "height", 150 );
+
+        function drawChart( dataArray ){
+          // create a selection and bind data
+          var selection = svg.selectAll( "rect" )
+                             .data( dataArray );
+
+          // create new elements wherever needed                   
+          selection.enter()
+            .append( "rect" )
+            .attr( "x", function(d,i){
+              return i*25;
+            })
+            .attr( "width", 15 )
+            .attr( "fill", "#d1c9b8" );
+
+          // set bar heights based on data
+          selection
+            .attr( "height", function(d){
+              return d/10 * 1.5;
+            })
+            .attr( "y", function(d){
+              return 150 - d/10 * 1.5;
+            });
+          
+          // remove any unused bars
+          selection.exit()
+            .remove();
+        }
+
+      drawChart( ratData );
+  </script>
+</body>
+</html>

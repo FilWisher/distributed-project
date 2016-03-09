@@ -1,0 +1,75 @@
+<html>
+<head>
+  <title>A D3 map</title>
+  <script src="../d3 source code/d3.min.js" charset="utf-8"></script>
+  <script src="neighbourhoods.js"></script>
+  <script src="rodents.js"></script>
+</head>
+<style>
+      #neighborhoods path{
+      fill: #ccc;
+    }
+    #rodents path{
+      fill: #900;
+      stroke: #999;
+    }
+    #rodents path:hover{
+      fill: black;
+    }
+</style>
+
+
+
+<body>
+  <script>
+var width = 700,
+    height = 580;
+
+var svg = d3.select( "body" )
+  .append( "svg" )
+  .attr( "width", width )
+  .attr( "height", height );
+
+var neighborhoods = svg.append( "g" ).attr( "id", "neighborhoods" );
+
+var albersProjection = d3.geo.albers()
+  .scale( 190000 )
+  .rotate( [71.057,0] )
+  .center( [0, 42.313] )
+  .translate( [width/2,height/2] );
+
+var geoPath = d3.geo.path()
+    .projection( albersProjection );
+
+neighborhoods.selectAll( "path" )
+  .data( neighborhoods_json.features )
+  .enter()
+  .append( "path" )
+  .attr( "d", geoPath );
+
+
+var rodents = svg.append( "g" ).attr( "id", "rodents" );
+
+rodents.selectAll( "path" )
+  .data( rodents_json.features )
+  .enter()
+  .append( "path" )
+  .attr( "d", geoPath )
+  .on( "click", function(){
+    //d3.select(this).remove();
+  d3.select(this)
+  .attr("opacity",1)
+  .transition()
+  .duration( 1000 )
+  .attr( "x", width * Math.round( Math.random() ) )
+  .attr( "y", height * Math.round( Math.random() ) )
+  .attr( "opacity", 0 )
+  .each("end",function(){
+    d3.select(this).remove();
+  });
+  });
+
+
+  </script>
+</body>
+</html>
