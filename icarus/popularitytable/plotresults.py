@@ -51,7 +51,7 @@ STRATEGY_STYLE = {
          'HR_HYBRID_AM':    'c-s',
          'HR_HYBRID_SM':    'r-v',
          'LCE':             'b--p',
-         'LCD':             'c-s',
+         'LCD':             'c-s         d',
          'POPULARITY_TABLE':'g-->',
          'PROB_CACHE':      'c--<',
          'RAND_CHOICE':     'r--<',
