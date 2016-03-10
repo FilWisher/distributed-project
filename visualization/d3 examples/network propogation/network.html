@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset='UTF-8' content='text/html' http-equiv='Content-Type'>
+<title>Link Prediction</title>
+<script src="assets/jquery-1.7.1.min-65245b2f8d7c225a5a031ad58bba9194.js" type="text/javascript"></script>
+<script src="assets/jquery.tablesorter.min-f534d8792f8e1526f3f298c8a3410d5d.js" type="text/javascript"></script>
+<script src="assets/jquery-ui-1.8.19.custom.min-a14a9e65a34749cbb0ec1d987a364f8b.js" type="text/javascript"></script>
+<script src="assets/bootstrap.min-7a1d52d9737ba7d1b5fa2c4058f40e95.js" type="text/javascript"></script>
+<link href="assets/bootstrap.min-d96bbcbd60ea9dcf47b027aafe949c9a.css" media="screen" rel="stylesheet" type="text/css" />
+<link href="assets/bootstrap-responsive.min-eb43e8a9437abf47efabaf6e1042cc0f.css" media="screen" rel="stylesheet" type="text/css" />
+<script src="assets/underscore-min-f856f7863147f1288b13209ad256dd63.js" type="text/javascript"></script>
+<script src="../../d3 source code/d3.min.js" type="text/javascript"></script>
+<link href="assets/main-454fd630d4165b98cce06d9ba4443f3b.css" media="screen" rel="stylesheet" type="text/css" />
+<script src="assets/network-89766ffb44c45d23759cdf836587bd79.js" type="text/javascript"></script>
+<script src="assets/comparison-c51abbdbf23b57798f6cfe36c33b075b.js" type="text/javascript"></script>
+</head>
+<body>
+<div class='navbar navbar-fixed-top'>
+<div class='navbar-inner'>
+<div class='container-fluid'>
+<a class='brand' href='/'>Link Prediction</a>
+<div class='nav-collapse'>
+<ul class='nav'>
+<li>
+<a href='/network'>Local Network</a>
+</li>
+<li>
+<a href='/comparison'>Feature Comparison</a>
+</li>
+<li>
+<a href='http://blog.echen.me/2012/07/31/edge-prediction-in-a-social-graph-my-solution-to-facebooks-user-recommendation-contest-on-kaggle/'>Blog Post</a>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+<div class='container'>
+<h1>Local Network</h1>
+<br>
+<div id='allchart'>
+<div id='chart'></div>
+<br>
+<form class='form-horizontal'>
+<fieldset>
+<div class='control-group'>
+<label class='control-label' for='network'>Network</label>
+<div class='controls'>
+<select class='span2' id='network'>
+<option value='1'>1</option>
+<option value='1_untrimmed'>1_untrimmed</option>
+<option value='4'>4</option>
+<option value='317'>317</option>
+<option value='138'>138</option>
+<option value='2'>2</option>
+</select>
+</div>
+</div>
+<div class='control-group'>
+<label class='control-label' for='metric'>Metric</label>
+<div class='controls'>
+<select class='span4' id='metric'>
+<option value='personalized_pagerank'>personalized_pagerank</option>
+<option value='propagation_score'>propagation_score</option>
+<option value='personalized_pagerank_index'>personalized_pagerank_index</option>
+<option value='propagation_index'>propagation_index</option>
+<option value='propagation_to_personalized_pagerank_log_ratio'>propagation_to_personalized_pagerank_log_ratio</option>
+<option value='sim_to_followings_by_followers'>sim_to_followings_by_followers</option>
+<option value='sim_to_followers_by_followings'>sim_to_followers_by_followings</option>
+<option value='sim_by_followers'>sim_by_followers</option>
+<option value='sim_by_followings'>sim_by_followings</option>
+<option value='sim_by_followings_by_followers'>sim_by_followings_by_followers</option>
+<option value='reg_sim_to_followings_by_followers'>reg_sim_to_followings_by_followers</option>
+<option value='reg_sim_to_followers_by_followings'>reg_sim_to_followers_by_followings</option>
+<option value='reg_sim_by_followers'>reg_sim_by_followers</option>
+<option value='reg_sim_by_followings'>reg_sim_by_followings</option>
+<option value='reg_sim_by_followings_by_followers'>reg_sim_by_followings_by_followers</option>
+</select>
+</div>
+</div>
+</fieldset>
+</form>
+</div>
+<div id='remaining'>
+<p id='metric_description'></p>
+<hr>
+<p>The graph above reveals the local network surrounding a user (highlighted in black). Nodes are sized according to their distance from this central user, up to a maximum distance of 3, and colored according to the chosen metric.</p>
+<p>Mousing over a node uncovers its own local network. Its <span class="friends"><b>friends</b></span> (users who both follow the node and are followed back in turn) are colored <span class="friends"><b>purple</b></span>, the nodes it <span class="following"><b>follows</b></span> are in <span class="following"><b>teal</b></span>, and its <span class="followedBy"><b>followers</b></span> are in <span class="followedBy"><b>orange</b></span>.</p>
+</div>
+<script>
+  //<![CDATA[
+    var descriptions ={"propagation_score":"Calculate a propagation score, similar to a random walk or personalized PageRank, around the central node.","personalized_pagerank":"Calculate a personalized PageRank around the central node.","propagation_index":"For each node, its propagation score around the central node is calculated and ranked. It is colored according to this sorted index (rather than by the value of its propagation score).","personalized_pagerank_index":"For each node, its personalized PageRank around the central node is calculated and ranked. It is colored according to this sorted index (rather than by the value of its personalized PageRank).","propagation_to_personalized_pagerank_log_ratio":"The logarithm of the ratio of the node's propagation score to its personalized PageRank.","sim_to_followings_by_followers":"Each node is represented by the set of its followers. We calculate its Jaccard similarity to each of the central node's followings, and sum these together.","sim_to_followers_by_followings":"Each node is represented by the set of users it is following. We calculate its Jaccard similarity to each of the central node's followers, and sum these together.","sim_by_followers":"Calculate the Jaccard similarity between each node and the central user, when nodes are represented as sets of their followings.","sim_by_followings":"Calculate the Jaccard similarity between each node and the central user, when nodes are represented as sets of their followings.","sim_by_followings_by_followers":"The central node is represented by its followings. All other nodes are represented by their followers. Calculate the Jaccard similarity between them.","reg_sim_to_followings_by_followers":"A regularized version of the same metric above.","reg_sim_to_followers_by_followings":"A regularized version of the same metric above.","reg_sim_by_followers":"A regularized version of the same metric above.","reg_sim_by_followings":"A regularized version of the same metric above.","reg_sim_by_followings_by_followers":"A regularized version of the same metric above."};
+    
+    var config = {};
+    var sourceNode = "1";
+    console.log(sourceNode);
+    config.colorField = "personalized_pagerank";
+    function update(json) {
+      d3.select("#chart svg").remove();
+      ret = expander.network(json.nodes, json.links, sourceNode, config);
+    
+      $("select#network").change(function() {
+        sourceNode = $(this).val();
+        if (sourceNode == "1_untrimmed") {
+          sourceNode = "1";
+          d3.json(sourceNode + "_untrimmed_network.json", function(x) {
+            update(x);
+          });
+        } else {
+          d3.json(sourceNode + "_network.json", function(x) {
+            update(x);
+          });
+        }
+      });
+    
+      $("select#metric").change(function() {
+        var metric = $(this).val()
+        config.colorField = metric;
+        ret.updateColor(metric);
+        console.log(descriptions[metric]);
+        $("#metric_description").text(descriptions[metric]);
+      });
+    };
+    
+    d3.json("1_network.json", function(json) {
+      update(json);
+    });
+  //]]>
+</script>
+
+
+<br>
+<footer class='footer'>
+<hr>
+<p>
+By
+<a href='http://blog.echen.me'>Edwin Chen</a>
+::
+<a href='http://twitter.com/echen'>@echen</a>
+::
+<a href='http://blog.echen.me'>blog.echen.me</a>
+</p>
+<br>
+</footer>
+</div>
+</body>
+</html>
+
