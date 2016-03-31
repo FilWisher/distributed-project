@@ -30,11 +30,19 @@
 
 </style>
 <body>
+
+<div id="option">
+    <input name="updateButton" 
+           type="button" 
+           value="Update" 
+           onclick="update_colour()" />
+</div>
+
 <script type="text/javascript" src="../d3 source code/d3.min.js"></script>
 <script src="../d3 examples/d3.legend.js"></script>
 <script>
 
-    var NODE_SIZE = 2;
+    var STD_NODE_SIZE = 4;
 
     var width = 800,
         height = 600;
@@ -53,8 +61,7 @@
     d3.json("../input data/formatted_topology.json", function(error, graph) {  
       if (error) throw error;
 
-      force
-          .nodes(graph.nodes)
+      force.nodes(graph.nodes)
           .links(graph.edges)
           .start();
 
@@ -76,16 +83,28 @@
               var node_size;
               if (d.type == "router") { 
                 if (d.cache_size == 0) {
-                  node_size = 4
+                  node_size = STD_NODE_SIZE
                 } else {
-                    node_size = d.cache_size/2;
+                    node_size = d.cache_size/1.5;
                 }
-              } else if (d.type == "source") { node_size = 4;
-              } else if (d.type == "receiver") {node_size = 4;}
+              } else if (d.type == "source") { node_size = STD_NODE_SIZE;
+              } else if (d.type == "receiver") {node_size = STD_NODE_SIZE;}
               return node_size;
           })
           .style("fill", function(d) { return color(d.type); })
-          .call(force.drag);
+          .call(force.drag)
+          .on('mouseover', function(d,i) {
+            d3.select(this).transition()
+              .ease('cubic-out')
+              .duration('200')
+              .attr('r', 20)
+          })
+          .on('mouseout', function(d,i) {
+            d3.select(this).transition()
+              .ease('cubic-out')
+              .duration('200')
+              .attr('r', 5)
+          });
 
       node.append("title")
           .text(function(d) { return d.name; })
@@ -104,15 +123,33 @@
             .attr("cy", function(d) { return d.y; });     
 
       });
+
+
     });
 
-      // Add title    
+    function update_colour() {
+        canvas.selectAll(".node")
+            .transition()
+
+            .style("fill", function(d){
+              var node_colour;
+              if (d.type == "router") { 
+                  node_colour = "grey"
+              } else {
+                node_colour = "yellow"
+              }
+              return node_colour;
+            })
+            .duration(2500)
+            .delay(100)
+    }
+
+    // Add title    
     canvas.append("svg:text")
           .attr("class", "title")
           .attr("x", 40)
           .attr("y", 40)
           .style("font-size", "34px")
-
           .text("Icarus Network Simulation: Topology");
 
     legend = canvas.append("g")
