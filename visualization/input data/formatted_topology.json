@@ -373,266 +373,319 @@
   ], 
   "nodes": [
     {
+      "cache_size": "N/A - not a router", 
       "group": 0, 
       "name": "10", 
       "type": "receiver"
     }, 
     {
+      "cache_size": "N/A - not a router", 
       "group": 1, 
       "name": "1028", 
       "type": "source"
     }, 
     {
+      "cache_size": 0, 
       "group": 2, 
       "name": "24", 
       "type": "router"
     }, 
     {
+      "cache_size": 16, 
       "group": 3, 
       "name": "25", 
       "type": "router"
     }, 
     {
+      "cache_size": "N/A - not a router", 
       "group": 4, 
       "name": "26", 
       "type": "receiver"
     }, 
     {
+      "cache_size": 16, 
       "group": 5, 
       "name": "27", 
       "type": "router"
     }, 
     {
+      "cache_size": "N/A - not a router", 
       "group": 6, 
       "name": "20", 
       "type": "receiver"
     }, 
     {
+      "cache_size": "N/A - not a router", 
       "group": 7, 
       "name": "21", 
       "type": "receiver"
     }, 
     {
+      "cache_size": 16, 
       "group": 8, 
       "name": "22", 
       "type": "router"
     }, 
     {
+      "cache_size": 16, 
       "group": 9, 
       "name": "23", 
       "type": "router"
     }, 
     {
+      "cache_size": 0, 
       "group": 10, 
       "name": "28", 
       "type": "router"
     }, 
     {
+      "cache_size": 16, 
       "group": 11, 
       "name": "29", 
       "type": "router"
     }, 
     {
+      "cache_size": 0, 
       "group": 12, 
       "name": "1", 
       "type": "router"
     }, 
     {
+      "cache_size": 16, 
       "group": 13, 
       "name": "0", 
       "type": "router"
     }, 
     {
+      "cache_size": "N/A - not a router", 
       "group": 14, 
       "name": "1038", 
       "type": "source"
     }, 
     {
+      "cache_size": "N/A - not a router", 
       "group": 15, 
       "name": "1039", 
       "type": "source"
     }, 
     {
+      "cache_size": 16, 
       "group": 16, 
       "name": "5", 
       "type": "router"
     }, 
     {
+      "cache_size": 16, 
       "group": 17, 
       "name": "4", 
       "type": "router"
     }, 
     {
+      "cache_size": 16, 
       "group": 18, 
       "name": "7", 
       "type": "router"
     }, 
     {
+      "cache_size": 0, 
       "group": 19, 
       "name": "6", 
       "type": "router"
     }, 
     {
+      "cache_size": "N/A - not a router", 
       "group": 20, 
       "name": "1014", 
       "type": "source"
     }, 
     {
+      "cache_size": "N/A - not a router", 
       "group": 21, 
       "name": "1033", 
       "type": "source"
     }, 
     {
+      "cache_size": "N/A - not a router", 
       "group": 22, 
       "name": "1016", 
       "type": "source"
     }, 
     {
+      "cache_size": "N/A - not a router", 
       "group": 23, 
       "name": "1017", 
       "type": "source"
     }, 
     {
+      "cache_size": "N/A - not a router", 
       "group": 24, 
       "name": "1035", 
       "type": "source"
     }, 
     {
+      "cache_size": 16, 
       "group": 25, 
       "name": "3", 
       "type": "router"
     }, 
     {
+      "cache_size": 16, 
       "group": 26, 
       "name": "13", 
       "type": "router"
     }, 
     {
+      "cache_size": 16, 
       "group": 27, 
       "name": "9", 
       "type": "router"
     }, 
     {
+      "cache_size": 0, 
       "group": 28, 
       "name": "38", 
       "type": "router"
     }, 
     {
+      "cache_size": 16, 
       "group": 29, 
       "name": "8", 
       "type": "router"
     }, 
     {
+      "cache_size": 16, 
       "group": 30, 
       "name": "2", 
       "type": "router"
     }, 
     {
+      "cache_size": "N/A - not a router", 
       "group": 31, 
       "name": "11", 
       "type": "receiver"
     }, 
     {
+      "cache_size": "N/A - not a router", 
       "group": 32, 
       "name": "1024", 
       "type": "source"
     }, 
     {
+      "cache_size": 0, 
       "group": 33, 
       "name": "39", 
       "type": "router"
     }, 
     {
+      "cache_size": "N/A - not a router", 
       "group": 34, 
       "name": "1031", 
       "type": "source"
     }, 
     {
+      "cache_size": 16, 
       "group": 35, 
       "name": "15", 
       "type": "router"
     }, 
     {
+      "cache_size": 0, 
       "group": 36, 
       "name": "14", 
       "type": "router"
     }, 
     {
+      "cache_size": 0, 
       "group": 37, 
       "name": "17", 
       "type": "router"
     }, 
     {
+      "cache_size": 0, 
       "group": 38, 
       "name": "16", 
       "type": "router"
     }, 
     {
+      "cache_size": "N/A - not a router", 
       "group": 39, 
       "name": "19", 
       "type": "receiver"
     }, 
     {
+      "cache_size": "N/A - not a router", 
       "group": 40, 
       "name": "18", 
       "type": "receiver"
     }, 
     {
+      "cache_size": 0, 
       "group": 41, 
       "name": "31", 
       "type": "router"
     }, 
     {
+      "cache_size": 16, 
       "group": 42, 
       "name": "30", 
       "type": "router"
     }, 
     {
+      "cache_size": "N/A - not a router", 
       "group": 43, 
       "name": "37", 
       "type": "receiver"
     }, 
     {
+      "cache_size": 16, 
       "group": 44, 
       "name": "36", 
       "type": "router"
     }, 
     {
+      "cache_size": 0, 
       "group": 45, 
       "name": "35", 
       "type": "router"
     }, 
     {
+      "cache_size": 16, 
       "group": 46, 
       "name": "34", 
       "type": "router"
     }, 
     {
+      "cache_size": 0, 
       "group": 47, 
       "name": "33", 
       "type": "router"
     }, 
     {
+      "cache_size": 0, 
       "group": 48, 
       "name": "32", 
       "type": "router"
     }, 
     {
+      "cache_size": "N/A - not a router", 
       "group": 49, 
       "name": "1006", 
       "type": "source"
     }, 
     {
+      "cache_size": 16, 
       "group": 50, 
       "name": "12", 
       "type": "router"
     }, 
     {
+      "cache_size": "N/A - not a router", 
       "group": 51, 
       "name": "1001", 
       "type": "source"
     }, 
     {
+      "cache_size": "N/A - not a router", 
       "group": 52, 
       "name": "1032", 
       "type": "source"

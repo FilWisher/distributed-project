@@ -34,7 +34,9 @@
 <script src="../d3 examples/d3.legend.js"></script>
 <script>
 
-    var width = 600,
+    var NODE_SIZE = 2;
+
+    var width = 800,
         height = 600;
 
     var color = d3.scale.category10();
@@ -72,8 +74,13 @@
           //.attr("r", 5)
           .attr("r", function(d){
               var node_size;
-              if (d.type == "router") { node_size = 8;
-              } else if (d.type == "source") { node_size = 6;
+              if (d.type == "router") { 
+                if (d.cache_size == 0) {
+                  node_size = 4
+                } else {
+                    node_size = d.cache_size/2;
+                }
+              } else if (d.type == "source") { node_size = 4;
               } else if (d.type == "receiver") {node_size = 4;}
               return node_size;
           })
