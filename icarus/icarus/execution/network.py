@@ -499,6 +499,8 @@ class NetworkController(object):
             The evicted object or *None* if no contents were evicted.
         """
         if node in self.model.cache:
+            if self.session['log']:
+                self.collector.add_content(node, self.session['content'])
             return self.model.cache[node].put(self.session['content'])
     
     def get_content(self, node):
@@ -514,16 +516,17 @@ class NetworkController(object):
         content : bool
             True if the content is available, False otherwise
         """
+        name, props = fnss.get_stack(self.model.topology, node)
         if node in self.model.cache:
             cache_hit = self.model.cache[node].get(self.session['content'])
             if cache_hit:
                 if self.session['log']:
                     self.collector.cache_hit(node)
-            else:
+                return cache_hit
+            elif name != 'source':
                 if self.session['log']:
                     self.collector.cache_miss(node)
-            return cache_hit
-        name, props = fnss.get_stack(self.model.topology, node)
+                return cache_hit
         if name == 'source' and self.session['content'] in props['contents']:
             if self.collector is not None and self.session['log']:
                 self.collector.server_hit(node)
@@ -545,6 +548,8 @@ class NetworkController(object):
             *True* if the entry was in the cache, *False* if it was not.
         """
         if node in self.model.cache:
+            if self.session['log']:
+                self.collector.remove_content(node, self.session['content'])
             return self.model.cache[node].remove(self.session['content'])
 
     def end_session(self, success=True):
