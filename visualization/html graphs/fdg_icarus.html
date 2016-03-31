@@ -34,14 +34,14 @@
 <script src="../d3 examples/d3.legend.js"></script>
 <script>
 
-    var width = 900,
-        height = 900;
+    var width = 600,
+        height = 600;
 
     var color = d3.scale.category10();
 
     var force = d3.layout.force()
-        .charge(-200)
-        .linkDistance(100)
+        .charge(-120)
+        .linkDistance(50)
         .size([width, height]);
 
     var canvas = d3.select("body").append("svg")
@@ -69,9 +69,14 @@
           .append("circle")
           .attr("class", "node")
           .attr("data-legend",function(d) { return d.type;})
-          .attr("r", 5)
-          //.attr("r", function(d){return d.group/3})
-          //.attr("r", function(d){return d.group/3})
+          //.attr("r", 5)
+          .attr("r", function(d){
+              var node_size;
+              if (d.type == "router") { node_size = 8;
+              } else if (d.type == "source") { node_size = 6;
+              } else if (d.type == "receiver") {node_size = 4;}
+              return node_size;
+          })
           .style("fill", function(d) { return color(d.type); })
           .call(force.drag);
 
