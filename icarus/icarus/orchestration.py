@@ -260,7 +260,6 @@ def run_scenario(settings, params, curr_exp, n_exp):
 
         logger.info('Experiment %d/%d | Start simulation', curr_exp, n_exp)
         results = exec_experiment(topology, workload, netconf, strategy, cache_policy, collectors)
-        
         duration = time.time() - start_time
         logger.info('Experiment %d/%d | End simulation | Duration %s.', 
                     curr_exp, n_exp, timestr(duration, True))

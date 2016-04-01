@@ -1,0 +1,15 @@
+engines:
+  duplication:
+    enabled: true
+    config:
+      languages:
+      - javascript
+  fixme:
+    enabled: true
+  eslint:
+    enabled: true
+    config:
+      config: visualization/.eslintrc
+ratings:
+  paths:
+  - "**.js"

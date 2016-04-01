@@ -2,6 +2,12 @@
 """
 import collections
 import copy
+
+try:
+    import jsonpickle as jp
+except ImportError:
+    print "Json Pickle import failed, install jsonpickle package to use this output"
+
 try:
     import cPickle as pickle
 except ImportError:
@@ -13,7 +19,8 @@ from icarus.registry import register_results_reader, register_results_writer
 __all__ = [
     'ResultSet',
     'write_results_pickle',
-    'read_results_pickle'
+    'read_results_pickle',
+    'write_results_json'
            ]
 
 class ResultSet(object):
@@ -194,3 +201,70 @@ def read_results_pickle(path):
     """
     with open(path, 'rb') as pickle_file:
         return pickle.load(pickle_file)
+
+@register_results_writer('JSON')
+def write_results_json(results, path):
+    """Write a resultset to a JSON file
+    
+    Parameters
+    ----------
+    results : ResultSet
+        The set of results
+    path : str
+        The path of the file to which write
+    """
+    results = jp.encode(results)
+    with open(path, 'wb') as f:
+        f.write(results)
+
+@register_results_reader('JSON')
+def read_results_json(path):
+    """Reads a resultset from a json file created by Icarus.
+    
+    Parameters
+    ----------
+    path : str
+    The file path from which results are read
+    
+    Returns
+    -------
+    results : ResultSet
+        The read result set
+    """
+    with open(path, 'rb') as json_file:
+        return jp.decode(json_file)
+    
+@register_results_writer('JSON_TOPOLOGY')
+def write_results_json(results, path):
+    """Write a resultset to a JSON file
+    Also provides a JSON file of the topology used in the experiment
+    
+    Parameters
+    ----------
+    results : ResultSet
+        The set of results
+    path : str
+        The path of the file to which write
+    """
+    JSON_results = jp.encode(results)
+    with open(path, 'wb') as f:
+        f.write(JSON_results)
+
+    try:
+        topology_path = path[:path.rfind('.')] + "_topology_"
+    except:
+        topology_path = path + "_topology.json"
+
+    try:
+        e = results[0][1]['TOPOLOGY']
+        for i in range(0, len(results)):
+            exp = results[i][1]['TOPOLOGY']['TOPOLOGY']
+            topology_out = {'nodes':exp.stacks(), 'edges':exp.edges()}
+            topology_out = jp.encode(topology_out)
+            with open(topology_path + str(i) + ".json", 'wb') as f:
+                f.write(topology_out)
+    except:
+        print "Topology missing from results, add 'TOPOLOGY' to config DATA_COLLECTORS for this data"
+    
+    
+    

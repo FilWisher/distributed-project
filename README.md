@@ -1,5 +1,7 @@
+[![Build Status](https://travis-ci.org/FilWisher/distributed-project.svg?branch=master)](https://travis-ci.org/FilWisher/distributed-project) [![Test Coverage](https://codeclimate.com/github/FilWisher/distributed-project/badges/coverage.svg)](https://codeclimate.com/github/FilWisher/distributed-project/coverage)
+
 # distributed-project
-For distributed group project
+Searching for an optimal caching algorithm in content-based networks
 
 ## project map
 
@@ -12,4 +14,35 @@ For distributed group project
 [1] - List of background reading resources    
 [2] - PDFs of relevant articles   
 [3] - Example json files for d3   
-[4] - icarus simulator   
+[4] - icarus simulator 
+
+## development
+
+### setup
+
+Make sure you have nodejs and npm installed.
+
+```
+git clone https://github.com/filwisher/distributed-project
+cd distributed-project/visualization
+npm install
+```
+
+To run tests: ```npm test```
+To get coverage report: ```npm run coverage```
+To build app: ```npm run build```
+Or to build app continuously: ```npm run build:w```
+
+### workflow
+
+Open visualization/assets/index.html
+   , visualization/assets/main.js
+   , visualization/test/tests.js
+   
+Run ```npm start``` from visualization/assets
+Run ```npm build:w``` from visualization
+
+Write changes into visualization/assets/main.js
+Write tests into visualization/tests/test.js
+
+Before you commit, run ```npm run cover``` to check coverage reports
