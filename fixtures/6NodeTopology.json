@@ -1,8 +1,6 @@
 {
 	"nodes": {
-		"1": {
-			"py/tuple": ["receiver", {}]
-			}, 
+		"1": {"py/tuple": ["receiver", {}]}, 
 		"0": {"py/tuple": ["router", {"cache_size": 6}]}, 
 		"3": {"py/tuple": ["router", {"cache_size": 2}]}, 
 		"2": {"py/tuple": ["router", {"cache_size": 9}]}, 

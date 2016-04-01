@@ -14,13 +14,13 @@
   }
 
   .node {
-    stroke: #fff;
-    stroke-width: 1px;
+    stroke: black;
+    stroke-width: 2px;
   }
 
   .link {
     stroke: #ccc;
-    stroke-opacity: .6;
+    stroke-opacity: 1.0;
   }
 
   .legend rect {
@@ -44,19 +44,20 @@
 
     var STD_NODE_SIZE = 4;
 
-    var width = 800,
-        height = 600;
+    var width = 1000,
+        height = 800;
 
     var color = d3.scale.category10();
 
     var force = d3.layout.force()
-        .charge(-120)
-        .linkDistance(50)
+        .charge(-250)
+        .linkDistance(30)
         .size([width, height]);
 
     var canvas = d3.select("body").append("svg")
         .attr("width", width)
-        .attr("height", height);
+        .attr("height", height)
+        .style("background", "#E0E0E0");
 
     d3.json("../input data/formatted_topology.json", function(error, graph) {  
       if (error) throw error;
@@ -70,7 +71,8 @@
           .enter()
           .append("line")
           .attr("class", "link")
-          .style("stroke-width", function(d) { return Math.sqrt(d.target); });
+          .style("stroke-width", 2)
+          .style("stroke", "black");
 
       var node = canvas.selectAll(".node")
           .data(graph.nodes)
@@ -92,18 +94,33 @@
               return node_size;
           })
           .style("fill", function(d) { return color(d.type); })
+          .style("stroke-width", 1)
+          .style("stroke", "black")
           .call(force.drag)
+          // hover mouse over node modifies node radius
           .on('mouseover', function(d,i) {
             d3.select(this).transition()
               .ease('cubic-out')
               .duration('200')
               .attr('r', 20)
           })
+          // is it possible to reset to original value
           .on('mouseout', function(d,i) {
             d3.select(this).transition()
               .ease('cubic-out')
               .duration('200')
-              .attr('r', 5)
+          .attr("r", function(d){
+              var node_size;
+              if (d.type == "router") { 
+                if (d.cache_size == 0) {
+                  node_size = STD_NODE_SIZE
+                } else {
+                    node_size = d.cache_size/1.5;
+                }
+              } else if (d.type == "source") { node_size = STD_NODE_SIZE;
+              } else if (d.type == "receiver") {node_size = STD_NODE_SIZE;}
+              return node_size;
+          })
           });
 
       node.append("title")
@@ -140,7 +157,7 @@
               }
               return node_colour;
             })
-            .duration(2500)
+            .duration(1000)
             .delay(100)
     }
 
@@ -149,20 +166,25 @@
           .attr("class", "title")
           .attr("x", 40)
           .attr("y", 40)
-          .style("font-size", "34px")
+          .attr("font-size", "28px")
+          .style("font-family", "Nunito")
+          .style("fill", "#707070")
+          .style("font-weight", 300)
           .text("Icarus Network Simulation: Topology");
 
     legend = canvas.append("g")
                     .attr("class","legend")
                     .attr("transform","translate(50,80)")
-                    .style("font-size","10px")
+                    .attr("font-size", "16px")
+                    .style("font-family", "Nunito")
+                    .style("fill", "#707070")
+                    .style("font-weight", 300)
                     .style("text-transform", "capitalize")
                     .call(d3.legend)      
 
     setTimeout(function() { 
-      legend
-        .style("font-size","20px")
-        .attr("data-style-padding",10)
-        .call(d3.legend)
+      legend.attr("data-style-padding",10)
+            .call(d3.legend)
       },1000)
 </script>
+</body>
