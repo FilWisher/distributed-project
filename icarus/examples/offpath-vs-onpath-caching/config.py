@@ -48,24 +48,24 @@ DATA_COLLECTORS = ['CACHE_HIT_RATIO', 'LATENCY', 'LINK_LOAD', 'PATH_STRETCH']
 # This would give problems while trying to plot the results because if for
 # example I wanted to filter experiment with alpha=0.8, experiments with
 # alpha = 0.799999999999 would not be recognized 
-ALPHA = [0.6, 0.8, 1.0, 1.2]
+ALPHA = [0.3, 0.6]
 
 # Total size of network cache as a fraction of content population
-NETWORK_CACHE = [0.004, 0.002, 0.01, 0.05]
+NETWORK_CACHE = [0.001, 0.004]
 
 # Number of content objects
-N_CONTENTS = 3*10**5
+N_CONTENTS = 10000
 
 # Number of requests per second (over the whole network)
-NETWORK_REQUEST_RATE = 12.0
+NETWORK_REQUEST_RATE = 1.0
 
 # Number of content requests generated to prepopulate the caches
 # These requests are not logged
-N_WARMUP_REQUESTS = 3*10**5
+N_WARMUP_REQUESTS = 40000
 
 # Number of content requests generated after the warmup and logged
 # to generate results. 
-N_MEASURED_REQUESTS = 6*10**5
+N_MEASURED_REQUESTS = 40000
 
 # List of all implemented topologies
 # Topology implementations are located in ./icarus/scenarios/topology.py
@@ -80,17 +80,17 @@ TOPOLOGIES =  [
 # The code is located in ./icarus/models/strategy.py
 STRATEGIES = [
      'LCE',             # Leave Copy Everywhere
-     'NO_CACHE',        # No caching, shorest-path routing
-     'HR_SYMM',         # Symmetric hash-routing
-     'HR_ASYMM',        # Asymmetric hash-routing
+     #'NO_CACHE',        # No caching, shorest-path routing
+     #'HR_SYMM',         # Symmetric hash-routing
+     #'HR_ASYMM',        # Asymmetric hash-routing
      'HR_MULTICAST',    # Multicast hash-routing
      'HR_HYBRID_AM',    # Hybrid Asymm-Multicast hash-routing
      'HR_HYBRID_SM',    # Hybrid Symm-Multicast hash-routing
-     'CL4M',            # Cache less for more
+     #'CL4M',            # Cache less for more
      'PROB_CACHE',      # ProbCache
      'LCD',             # Leave Copy Down
-     'RAND_CHOICE',     # Random choice: cache in one random cache on path
-     'RAND_BERNOULLI',  # Random Bernoulli: cache randomly in caches on path
+     #'RAND_CHOICE',     # Random choice: cache in one random cache on path
+     #'RAND_BERNOULLI',  # Random Bernoulli: cache randomly in caches on path
              ]
 
 # Cache replacement policy used by the network caches.

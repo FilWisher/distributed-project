@@ -51,7 +51,7 @@ STRATEGY_STYLE = {
          'HR_HYBRID_AM':    'c-s',
          'HR_HYBRID_SM':    'r-v',
          'LCE':             'b--p',
-         'LCD':             'g-->',
+         'LCD':             'c-s         d',
          'POPULARITY_TABLE':'g-->',
          'PROB_CACHE':      'c--<',
          'RAND_CHOICE':     'r--<',
@@ -313,30 +313,21 @@ def run(config, results, plotdir):
     cache_sizes = settings.NETWORK_CACHE
     alphas = settings.ALPHA
     strategies = settings.STRATEGIES
-    # Plot graphs
-    for topology in topologies:
-        for cache_size in cache_sizes:
-            logger.info('Plotting cache hit ratio for topology %s and cache size %s vs alpha' % (topology, str(cache_size)))
-            plot_cache_hits_vs_alpha(resultset, topology, cache_size, alphas, strategies, plotdir)
-            logger.info('Plotting link load for topology %s vs cache size %s' % (topology, str(cache_size)))
-            plot_link_load_vs_alpha(resultset, topology, cache_size, alphas, strategies, plotdir)
-            logger.info('Plotting latency for topology %s vs cache size %s' % (topology, str(cache_size)))
-            plot_latency_vs_alpha(resultset, topology, cache_size, alphas, strategies, plotdir)
-    for topology in topologies:
-        for alpha in alphas:
-            logger.info('Plotting cache hit ratio for topology %s and alpha %s vs cache size' % (topology, str(alpha)))
-            plot_cache_hits_vs_cache_size(resultset, topology, alpha, cache_sizes, strategies, plotdir)
-            logger.info('Plotting link load for topology %s and alpha %s vs cache size' % (topology, str(alpha)))
-            plot_link_load_vs_cache_size(resultset, topology, alpha, cache_sizes, strategies, plotdir)
-            logger.info('Plotting latency for topology %s and alpha %s vs cache size' % (topology, str(alpha)))
-            plot_latency_vs_cache_size(resultset, topology, alpha, cache_sizes, strategies, plotdir)
+     # Plot graphs
+    for cache_size in cache_sizes:
+	plot_cache_hits_vs_alpha(resultset, "GEANT", cache_size, alphas, strategies, plotdir)
+        plot_link_load_vs_alpha(resultset, "GEANT", cache_size, alphas, strategies, plotdir)
+        plot_latency_vs_alpha(resultset, "GEANT", cache_size, alphas, strategies, plotdir)
+#    print "222222222222222222222222222222222222222222222222222222222222"
+#    for topology in topologies:
+#        for alpha in alphas:
+#            plot_cache_hits_vs_cache_size(resultset, topology, alpha, cache_sizes, strategies, plotdir)
+#            plot_link_load_vs_cache_size(resultset, topology, alpha, cache_sizes, strategies, plotdir)
+#            plot_latency_vs_cache_size(resultset, topology, alpha, cache_sizes, strategies, plotdir)
     for cache_size in cache_sizes:
         for alpha in alphas:
-            logger.info('Plotting cache hit ratio for cache size %s vs alpha %s against topologies' % (str(cache_size), str(alpha)))
             plot_cache_hits_vs_topology(resultset, alpha, cache_size, topologies, strategies, plotdir)
-            logger.info('Plotting link load for cache size %s vs alpha %s against topologies' % (str(cache_size), str(alpha)))
             plot_link_load_vs_topology(resultset, alpha, cache_size, topologies, strategies, plotdir)
-    logger.info('Exit. Plots were saved in directory %s' % os.path.abspath(plotdir))
 
 
 def main():

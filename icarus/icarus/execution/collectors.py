@@ -774,3 +774,4 @@ class TopologyCollector(DataCollector):
     @inheritdoc(DataCollector)
     def results(self):
         return Tree({'TOPOLOGY': self.topology})
+
