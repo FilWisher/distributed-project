@@ -12,8 +12,6 @@ inheriting from the `DataCollector` class and override all required methods.
 from __future__ import division
 import collections
 
-import fnss
-
 from icarus.registry import register_data_collector
 from icarus.tools import cdf
 from icarus.util import Tree, inheritdoc
@@ -26,6 +24,8 @@ __all__ = [
     'LinkLoadCollector',
     'LatencyCollector',
     'PathStretchCollector',
+    'BulkDataCollector',
+    'EventTimeline',
     'TestCollector'
            ]
 
@@ -128,6 +128,9 @@ class DataCollector(object):
             calculate latency correctly in multicast cases
         """
         pass
+        
+    def all_sources(self, timestamp, a, receiver):
+        pass
     
     def end_session(self, success=True):
         """Reports that the session is closed, i.e. the content has been
@@ -138,6 +141,30 @@ class DataCollector(object):
         ----------
         success : bool, optional
             *True* if the session was completed successfully, *False* otherwise
+        """
+        pass
+
+    def remove_content(self, node, content):
+        """Reports the item 'content' has been removed from the cache at 'node'
+
+        Parameters
+        ----------
+        node : any hashable type
+            The location of the cache being removed from
+        content : any hashable type
+            The content identifier being removed
+        """
+        pass
+
+    def add_content(self, node, content):
+        """Reports the item 'content' has been removed from the cache at 'node'
+
+        Parameters
+        ----------
+        node : any hashable type
+            The location of the cache being added to
+        content : any hashable type
+            The content identifier being added
         """
         pass
     
@@ -165,7 +192,7 @@ class CollectorProxy(DataCollector):
     """
     
     EVENTS = ('start_session', 'end_session', 'cache_hit', 'cache_miss', 'server_hit',
-              'request_hop', 'content_hop', 'results')
+              'request_hop', 'content_hop', 'all_sources', 'remove_content', 'add_content', 'results')
     
     def __init__(self, view, collectors):
         """Constructor
@@ -185,6 +212,14 @@ class CollectorProxy(DataCollector):
     def start_session(self, timestamp, receiver, content):
         for c in self.collectors['start_session']:
             c.start_session(timestamp, receiver, content)
+        
+        #if bulk collector is present this will get a dic of all data held at the start
+        if(content == 1):
+            for c in self.collectors['all_sources']:
+                #dic = self.view.all_data_sources()
+                dic = self.view.content_locations(1)
+                c.all_sources(timestamp, dic, receiver)
+
     
     @inheritdoc(DataCollector)
     def cache_hit(self, node):
@@ -215,7 +250,17 @@ class CollectorProxy(DataCollector):
     def end_session(self, success=True):
         for c in self.collectors['end_session']:
             c.end_session(success)
-    
+
+    @inheritdoc(DataCollector)
+    def remove_content(self, node, content):
+        for c in self.collectors['remove_content']:
+            c.remove_content(node, content)
+
+    @inheritdoc(DataCollector)
+    def add_content(self, node, content):
+        for c in self.collectors['add_content']:
+            c.add_content(node, content)    
+
     @inheritdoc(DataCollector)
     def results(self):
         return Tree(**{c.name: c.results() for c in self.collectors['results']})
@@ -403,10 +448,6 @@ class CacheHitRatioCollector(DataCollector):
     def results(self):
         n_sess = self.cache_hits + self.serv_hits
         hit_ratio = self.cache_hits/n_sess
-	print "cache_hits is:"	
-	print self.cache_hits
-	print "serv_hits:"
-	print self.serv_hits
         results = Tree(**{'MEAN': hit_ratio})
         if self.off_path_hits:
             results['MEAN_OFF_PATH'] = self.off_path_hit_count/n_sess
@@ -558,3 +599,179 @@ class TestCollector(DataCollector):
         return self.session
 
     
+
+@register_data_collector('BULK_DATA')
+class BulkDataCollector(DataCollector):
+    """
+    Data collector which outputs complete trees of events 
+    WARNING - LARGE FILE CREATED IN LARGE EXPERIMENTS
+    """
+    
+    def __init__(self, view, sr=10):
+        """Constructor
+        
+        Parameters
+        ----------
+        view : NetworkView
+            The network view instance
+        """
+        self.flag = False
+        self.view = view
+        self.all_sources_dic = {}
+        self.current_sess_data = []
+        self.current_sess_key = -1
+        self.req_timeline = collections.defaultdict(int) #all events keyd by event counter
+        self.req_event_count = 0 #counter to keep track of events
+        if sr <= 0:
+            raise ValueError('sr must be positive')
+        self.sr = sr
+        self.t_start = -1
+        self.t_end = 1
+    
+    @inheritdoc(DataCollector)
+    def start_session(self, timestamp, receiver, content):
+        if content != 1:
+            self.flag = False
+        else:
+            self.flag = True
+
+        if self.t_start < 0:
+            self.t_start = timestamp
+        self.t_end = timestamp
+    
+    @inheritdoc(DataCollector)
+    def all_sources(self, timestamp, a, receiver):
+        self.current_sess_key = timestamp - self.t_start
+        self.current_sess_data.append((receiver,a))
+
+    @inheritdoc(DataCollector)
+    def end_session(self, success=True):
+        if self.flag == True:
+            self.all_sources_dic[self.current_sess_key] = self.current_sess_data
+        self.current_sess_data = []
+        
+
+    @inheritdoc(DataCollector)
+    def results(self):
+        duration = self.t_end - self.t_start
+       
+        return Tree({'CONTENT_HOP_COUNT_PER_EDGE': self.cont_count, 
+                     'REQUESTS_COUNT_PER_EDGE': self.req_count, 
+                     'ALL_REQUESTS': self.req_timeline, 
+                     'ALL_SOURCES' : self.all_sources_dic})
+
+
+
+@register_data_collector('EVENT_TIMELINE')
+class EventTimeline(DataCollector):
+    """
+    Provides a timeline of events
+    WARNING - LARGE RESULTS FILE FOR LARGE EXPERIMENTS
+    """
+    
+    def __init__(self, view, sr=10):
+        """Constructor
+        
+        Parameters
+        ----------
+        view : NetworkView
+            The network view instance
+        """
+        self.view = view
+        self.requester = ""
+        self.timeline = [] #Sequential list of all events
+        self.current_content = ""
+        self.content_starting_locations = {}
+        self.first_event = True
+
+    def generate_event(self, event_type, timestamp = -1, from_node = -1, to_node = -1, at_node = -1, data = -1):
+        l = [timestamp, from_node, to_node, at_node, data]
+        ln = ["timestamp", "from_node", "to_node", "node", "data_ID"]
+        current = {"event_type": event_type}
+        for k, n in zip(l, ln):
+            if(k != -1):
+                current[n] = k
+
+        self.timeline.append(current)
+    
+    @inheritdoc(DataCollector)
+    def start_session(self, timestamp, receiver, content):
+        self.generate_event("request", timestamp, receiver, data = content)
+        self.current_content = content
+        self.requester = receiver
+        
+        if self.first_event:
+            for k in range(1,1000):
+                try:
+                    self.content_starting_locations[k] = self.view.content_locations(k)
+                except:
+                    break        
+
+    @inheritdoc(DataCollector)
+    def cache_hit(self, node):
+        self.generate_event("cache_hit", at_node = node, data = self.current_content)
+
+    @inheritdoc(DataCollector)
+    def cache_miss(self, node):
+        self.generate_event("cache_lookup_failed", at_node = node, data = self.current_content)
+
+    @inheritdoc(DataCollector)
+    def server_hit(self, node):
+        self.generate_event("server_hit", at_node = node, data = self.current_content)
+
+    @inheritdoc(DataCollector)   
+    def request_hop(self, u, v, main_path=True):
+        self.generate_event("request_hop", from_node = u, to_node = v, data = self.current_content)
+
+    @inheritdoc(DataCollector)   
+    def content_hop(self, u, v, main_path=True):
+        self.generate_event("content_hop", from_node = u, to_node = v, data = self.current_content)
+
+
+    @inheritdoc(DataCollector)
+    def end_session(self, success=True):
+        self.generate_event("request_complete", at_node = self.requester, data = self.current_content)  
+
+    @inheritdoc(DataCollector)
+    def remove_content(self, node, content):
+        self.generate_event("cache_remove", at_node = node, data = self.current_content)  
+
+    @inheritdoc(DataCollector)
+    def add_content(self, node, content):
+        self.generate_event("cache_content", at_node = node, data = self.current_content)        
+
+    @inheritdoc(DataCollector)
+    def results(self):
+        content_locations = {}
+        for k in range(1,1000):
+            try:
+                content_locations[k] = self.view.content_locations(k)
+            except:
+                break
+        return Tree({'TIMELINE': self.timeline, 'CONTENT_ENDING_LOCATIONS': content_locations, 
+                     'CONTENT_STARTING_LOCATIONS': self.content_starting_locations})
+
+    
+
+@register_data_collector('TOPOLOGY')
+class TopologyCollector(DataCollector):
+    """
+    Includes the topology object in the results
+    Accessible to the results writer functions
+    """
+    
+    def __init__(self, view, sr=10):
+        """Constructor
+        
+        Parameters
+        ----------
+        view : NetworkView
+            The network view instance
+        """
+
+        self.topology = view.topology() #fnss topology object
+    
+    @inheritdoc(DataCollector)
+    def results(self):
+        return Tree({'TOPOLOGY': self.topology})
+
