@@ -586,3 +586,7 @@ class NetworkController(object):
 	#TODO: try to implement this in strategy for clarity and consistency
     
 
+    def decrement(self, amount):
+	for node in self.model.cache:
+	    self.model.cache[node].decrement(amount)
+	

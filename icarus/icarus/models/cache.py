@@ -1915,10 +1915,23 @@ class Popularity_Table(Cache):
 	if not self.has_count(k):
 	    return False
 	elif self._counter[k]>self.threshold:
-	    self.remove(k)
+	    self.remove_count(k)
 	    return True
 	else:
 	    return False
+
+    def remove_count(self,k):
+	count, t = self._counter[k]
+	self._counter[k]= 0, t
+
+    def decrement(self, amount):
+	for key in self._counter:
+	    count, t = self._counter[key]
+	    self._counter[key] = count-amount, t 
+	for key in self._counter:	    
+	    count, t = self._counter[key]
+	    if count <= 0:
+		self.remove_count(key)
    
     """-------------------------------BASIC     METHODS------------------------------------"""
     @inheritdoc(Cache)
@@ -1937,7 +1950,6 @@ class Popularity_Table(Cache):
     @inheritdoc(Cache)
     def has(self, k):
         return k in self._cache
-
 
     def has_count(self, k):
 	return k in self._counter
