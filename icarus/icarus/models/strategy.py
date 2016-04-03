@@ -892,11 +892,12 @@ class Popularity_Table(Strategy):
     @inheritdoc(Strategy)
     def process_event(self, time, receiver, content, log):
 	# decrement popularity score and update internal clock 
-	if time - self.clock > 120:	
-	    if self.clock > 0:	
-		dec = (time - self.clock)*self.dec_per_sec
-                self.controller.decrement(dec)
-		self.clock = time
+	if time - self.clock >= 120:
+            print "hello"	
+            #dec = (time - self.clock)*self.dec_per_sec
+            dec = 120
+            self.controller.decrement(dec, time)
+            self.clock = time
 
 	
 	# get all required data

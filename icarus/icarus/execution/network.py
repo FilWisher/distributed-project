@@ -269,7 +269,7 @@ class NetworkView(object):
             return self.model.cache[node].dump()
 
     def dump_table(self, node):
-       return self.model.cache[node].dump_pop_table
+       return self.model.cache[node].dump_pop_table()
 
     def get_threshold(self):
         return self.model.cache[self.model.cache.keys()[0]].get_threshold()
@@ -590,9 +590,9 @@ class NetworkController(object):
 	    	        self.put_content(adj_nodes)
     
 
-    def decrement(self, amount):
+    def decrement(self, amount, time):
 	for node in self.model.cache:
-	    self.model.cache[node].decrement(amount)
+	    self.model.cache[node].decrement(amount, time)
 
     def cache_recent_update(self, node, time):
 	if node in self.model.cache:

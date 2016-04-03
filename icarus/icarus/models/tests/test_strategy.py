@@ -842,6 +842,7 @@ class TestOnPath2(unittest.TestCase):
 
     def test_poptable(self):
         hr = strategy.Popularity_Table(self.view, self.controller)
+        """
         # receiver 0 requests 2, expect miss
 	# looks for it in 1, should not be in 2 or 3 yet, finds it in source 4
 	hr.process_event(1, 0, 2, True)
@@ -865,21 +866,25 @@ class TestOnPath2(unittest.TestCase):
             hr.process_event(1, 0, 2, True)
 
         loc = self.view.content_locations(2)
-        print loc
         self.assertEquals(len(loc), 4)
         self.assertIn(1, loc)
         self.assertIn(2, loc)
         self.assertIn(3, loc)
-        self.assertIn(4, loc)
+        self.assertIn(4, loc)"""
 
-        #---------------------time------------------
+       
+
+
         loc = self.view.content_locations(2)
-        for i in range(0,1201):
-            hr.process_event(i,0,2,True)    
-        
-            
+        print loc
+        for i in range(0,1208):
+            hr.process_event(i,0,2,True)
+            print self.view.dump_table(1)[2][0]
 
-        #---------------------time------------------
+        loc = self.view.content_locations(2)
+        print loc
+        self.assertEquals(len(loc), 21)
+
 
         print "Worked this far!!!"
 
