@@ -1902,7 +1902,6 @@ class Popularity_Table(Cache):
     """------------------------METHODS SPECIFIC FOR POPULARITY TABLE---------------------"""
     @inheritdoc(Cache)
     def get(self, k):
-        self.t += 1
         if k in self._counter:
             freq, t = self._counter[k]
             self._counter[k] = freq + 1, t
@@ -1934,6 +1933,10 @@ class Popularity_Table(Cache):
 		self.remove_count(key)
 	    if time-t > 240:
 		self.remove_count(key)
+
+    def update_t(self, k, time):
+	count, t = self._count[k]
+	self._count[k] = count, time	
 
 	    
 	    

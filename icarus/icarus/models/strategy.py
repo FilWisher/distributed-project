@@ -909,6 +909,7 @@ class Popularity_Table(Strategy):
             v = path[hop]
             self.controller.forward_request_hop(u, v)
             if self.view.has_cache(v):
+		self.controller.cache_recent_update(v,time)
                 if self.controller.get_content(v):
                     serving_node = v
                     break        

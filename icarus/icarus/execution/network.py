@@ -588,4 +588,8 @@ class NetworkController(object):
     def decrement(self, amount):
 	for node in self.model.cache:
 	    self.model.cache[node].decrement(amount)
+
+    def cache_recent_update(self, node, time):
+	if node in self.model.cache:
+	    self.model.cache[node].update_t(self.session['content'],t)
 	
