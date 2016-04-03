@@ -1913,9 +1913,7 @@ class Popularity_Table(Cache):
             return False
 
     def compare_count(self,k):
-	if not self.has_count(k):
-	    return False
-	elif self._counter[k]>self.threshold:
+	if self._counter[k]>self.threshold:
 	    self.remove_count(k)
 	    return True
 	else:

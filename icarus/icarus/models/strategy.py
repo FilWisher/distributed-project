@@ -920,9 +920,7 @@ class Popularity_Table(Strategy):
 
         # Return content
         path =  list(reversed(self.view.shortest_path(receiver, serving_node)))
-        for hop in range(1, len(path)):
-            u = path[hop - 1]
-            v = path[hop] 
+	for u, v in path_links(path):
             self.controller.forward_content_hop(u, v)
 	    self.controller.check_popularity_table(u)
         self.controller.end_session() 
