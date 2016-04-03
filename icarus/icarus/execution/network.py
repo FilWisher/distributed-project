@@ -271,6 +271,9 @@ class NetworkView(object):
     def dump_table(self, node):
        return self.model.cache[node].dump_pop_table
 
+    def get_threshold(self):
+        return self.model.cache[self.model.cache.keys()[0]].get_threshold()
+
 class NetworkModel(object):
     """Models the internal state of the network.
     
@@ -582,8 +585,6 @@ class NetworkController(object):
 	if v in self.model.cache:
 	    if self.model.cache[v].compare_count(self.session['content']):
     	        adj = self.model.neighbours[v]
-                print "----"
-                print v
     	        for adj_nodes in adj:
 	            if adj_nodes in self.model.cache:
 	    	        self.put_content(adj_nodes)

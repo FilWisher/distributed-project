@@ -861,110 +861,25 @@ class TestOnPath2(unittest.TestCase):
         self.assertEqual(4, summary['serving_node'])
 	#doesnt work, caches everywhere along path except for node next to requestor
 	#Run 102 requests which should cause item 2 to cache everywhere since all thresholds will be met!
-        for i in range(0,101):
+        for i in range(0,self.view.get_threshold()):
             hr.process_event(1, 0, 2, True)
 
         loc = self.view.content_locations(2)
-        self.assertEquals(len(loc), 1)
+        print loc
+        self.assertEquals(len(loc), 4)
         self.assertIn(1, loc)
         self.assertIn(2, loc)
         self.assertIn(3, loc)
         self.assertIn(4, loc)
 
+        #---------------------time------------------
+        loc = self.view.content_locations(2)
+        for i in range(0,1201):
+            hr.process_event(i,0,2,True)    
+        
+            
 
+        #---------------------time------------------
 
-	# moves content to node 3 - 1 hop closer to receiver
-        hr.process_event(1, 0, 2, True)
-        loc = self.view.content_locations(2)
-        self.assertEquals(len(loc), 2)
-        self.assertIn(1, loc)
-        self.assertNotIn(2, loc)
-        self.assertIn(3, loc)
-        self.assertNotIn(4, loc)
-        summary = self.collector.session_summary()
-        exp_req_hops = set(((0, 1), (1, 2), (2, 3)))
-        exp_cont_hops = set(((3, 2), (2, 1), (1, 0)))
-        req_hops = summary['request_hops']
-        cont_hops = summary['content_hops']
-        self.assertSetEqual(exp_req_hops, set(req_hops))
-        self.assertSetEqual(exp_cont_hops, set(cont_hops))
-        self.assertEqual(3, summary['serving_node'])
-        # receiver 0 requests 2, expect hit in 3
-        hr.process_event(1, 0, 2, True)
-        loc = self.view.content_locations(2)
-        self.assertEquals(len(loc), 2)
-        self.assertIn(2, loc)
-        self.assertIn(3, loc)
-        self.assertNotIn(4, loc)
-        summary = self.collector.session_summary()
-        exp_req_hops = set(((0, 1), (1, 2), (2, 3)))
-        exp_cont_hops = set(((3, 2), (2, 1), (1, 0)))
-        req_hops = summary['request_hops']
-        cont_hops = summary['content_hops']
-        self.assertSetEqual(exp_req_hops, set(req_hops))
-        self.assertSetEqual(exp_cont_hops, set(cont_hops))
-        self.assertEqual(3, summary['serving_node'])
-	# moves content to node 2 - 1 hop closer to receiver
-	hr.process_event(1, 0, 2, True)
-        loc = self.view.content_locations(2)
-        self.assertEquals(len(loc), 2)
-        self.assertIn(1, loc)
-        self.assertIn(2, loc)
-        self.assertNotIn(3, loc)
-        self.assertNotIn(4, loc)
-        summary = self.collector.session_summary()
-        exp_req_hops = set(((0, 1), (1, 2)))
-        exp_cont_hops = set(((3, 2), (2, 1)))
-        req_hops = summary['request_hops']
-        cont_hops = summary['content_hops']
-        self.assertSetEqual(exp_req_hops, set(req_hops))
-        self.assertSetEqual(exp_cont_hops, set(cont_hops))
-        self.assertEqual(2, summary['serving_node'])
-        # receiver 0 requests 2, expect hit in 2
-        hr.process_event(1, 0, 2, True)
-        loc = self.view.content_locations(2)
-        self.assertEquals(len(loc), 2)
-        self.assertIn(1, loc)
-        self.assertIn(2, loc)
-        self.assertNotIn(3, loc)
-        self.assertNotIn(4, loc)
-        summary = self.collector.session_summary()
-        exp_req_hops = set(((0, 1), (1, 2),))
-        exp_cont_hops = set(((2, 1), (1, 0)))
-        req_hops = summary['request_hops']
-        cont_hops = summary['content_hops']
-        self.assertSetEqual(exp_req_hops, set(req_hops))
-        self.assertSetEqual(exp_cont_hops, set(cont_hops))
-        self.assertEqual(2, summary['serving_node'])
-	# moves content to node 1 - 1 hop closer to receiver
-	hr.process_event(1, 0, 2, True)
-        loc = self.view.content_locations(2)
-        self.assertEquals(len(loc), 1)
-        self.assertIn(1, loc)
-        self.assertNotIn(2, loc)
-        self.assertNotIn(3, loc)
-        self.assertNotIn(4, loc)
-        summary = self.collector.session_summary()
-        exp_req_hops = set(((0, 1)))
-        exp_cont_hops = set(((1, 0)))
-        req_hops = summary['request_hops']
-        cont_hops = summary['content_hops']
-        self.assertSetEqual(exp_req_hops, set(req_hops))
-        self.assertSetEqual(exp_cont_hops, set(cont_hops))
-        self.assertEqual(1, summary['serving_node'])
-        # receiver 0 requests 2, expect hit in 1
-        hr.process_event(1, 0, 2, True)
-        loc = self.view.content_locations(2)
-        self.assertEquals(len(loc), 1)
-        self.assertIn(1, loc)
-        self.assertNotIn(2, loc)
-        self.assertNotIn(3, loc)
-        self.assertNotIn(4, loc)
-        summary = self.collector.session_summary()
-        exp_req_hops = set(((0, 1),))
-        exp_cont_hops = set(((1, 0),))
-        req_hops = summary['request_hops']
-        cont_hops = summary['content_hops']
-        self.assertSetEqual(exp_req_hops, set(req_hops))
-        self.assertSetEqual(exp_cont_hops, set(cont_hops))
-        self.assertEqual(1, summary['serving_node'])
+        print "Worked this far!!!"
+

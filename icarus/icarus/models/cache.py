@@ -1891,7 +1891,7 @@ class Popularity_Table(Cache):
     def __init__(self, maxlen, **kwargs):
         self._counter = {}
 	self._cache = set()
-        self.threshold = 100
+        self.threshold = 200
 	self.t = 0
 	self.time_limit = 30   #TODO: should depend on 
 	self.clock = 0
@@ -1903,6 +1903,9 @@ class Popularity_Table(Cache):
 
     def dump_pop_table(self):
         return self._counter
+
+    def get_threshold(self):
+        return self.threshold
 
     @inheritdoc(Cache)
     def get(self, k):
@@ -1965,7 +1968,6 @@ class Popularity_Table(Cache):
 
     @inheritdoc(Cache)
     def put(self, k):
-        print self._counter[k]
         if not self.has(k):
             if k in self._counter:
                 freq, t = self._counter[k]
