@@ -862,8 +862,6 @@ class TestOnPath2(unittest.TestCase):
         self.assertSetEqual(exp_req_hops, set(req_hops))
         self.assertSetEqual(exp_cont_hops, set(cont_hops))
         self.assertEqual(4, summary['serving_node'])
-	#doesnt work, caches everywhere along path except for node next to requestor
-	
 	# moves content to node 3 - 1 hop closer to receiver
         hr.process_event(1, 0, 2, True)
         loc = self.view.content_locations(2)
