@@ -887,21 +887,18 @@ class Popularity_Table(Strategy):
         super(Popularity_Table, self).__init__(view, controller)
         self.cache_size = view.cache_nodes(size=True)  
 	self.clock = 0;   
-    	self.dec_per_sec = 1;
-	self.count = 0;
-
+    	self.dec_per_sec = 0.5; #TODO: should depend on request rate(change manually for the time being)
+	self.count = 0
     @inheritdoc(Strategy)
     def process_event(self, time, receiver, content, log):
-	# decrement popularity score
-	self.count += 1 	
-	if self.count > 100:	
+	# decrement popularity score and update internal clock 
+	if time - self.count > 120:	
 	    if self.clock > 0:	
 		dec = ((time - self.clock)/self.clock)*self.dec_per_sec
                 self.controller.decrement(dec)
-		self.count-=100
+		self.clock = time
 
-	# update time on the clock      
-	self.clock = time;	
+	
 	# get all required data
         source = self.view.content_source(content)
         path = self.view.shortest_path(receiver, source)

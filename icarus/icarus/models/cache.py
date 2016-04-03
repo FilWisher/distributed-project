@@ -1891,8 +1891,10 @@ class Popularity_Table(Cache):
     def __init__(self, maxlen, **kwargs):
         self._counter = {}
 	self._cache = set()
-        self.threshold = 500
+        self.threshold = 100
 	self.t = 0
+	self.time_limit = 30   #TODO: should depend on 
+	self.clock = 0
         self._maxlen = int(maxlen)
         if self._maxlen <= 0:
             raise ValueError('maxlen must be positive')
@@ -1924,15 +1926,17 @@ class Popularity_Table(Cache):
 	count, t = self._counter[k]
 	self._counter[k]= 0, t
 
-    def decrement(self, amount):
+    def decrement(self, amount, time):
 	for key in self._counter:
 	    count, t = self._counter[key]
 	    self._counter[key] = count-amount, t 
-	for key in self._counter:	    
-	    count, t = self._counter[key]
-	    if count <= 0:
+	    if count-amount <= 0: 	    
 		self.remove_count(key)
-   
+	    if time-t > 240:
+		self.remove_count(key)
+
+	    
+	    
     """-------------------------------BASIC     METHODS------------------------------------"""
     @inheritdoc(Cache)
     def __len__(self):

@@ -583,7 +583,6 @@ class NetworkController(object):
     	        for adj_nodes in adj:
 	            if adj_nodes in self.model.cache:
 	    	        self.put_content(adj_nodes)
-	#TODO: try to implement this in strategy for clarity and consistency
     
 
     def decrement(self, amount):
