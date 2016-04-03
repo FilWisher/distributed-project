@@ -1900,20 +1900,19 @@ class Popularity_Table(Cache):
             raise ValueError('maxlen must be positive')
 
     """------------------------METHODS SPECIFIC FOR POPULARITY TABLE---------------------"""
+
+    def dump_pop_table(self):
+        return self._counter
+
     @inheritdoc(Cache)
     def get(self, k):
-        if k in self._counter:
-            freq, t = self._counter[k]
-            self._counter[k] = freq + 1, t
-        else:
-            self._counter[k] = 1, self.t
         if self.has(k):
             return True
         else:
             return False
 
     def compare_count(self,k):
-	if self._counter[k]>self.threshold:
+	if self._counter[k][0]>self.threshold:
 	    self.remove_count(k)
 	    return True
 	else:
@@ -1932,9 +1931,14 @@ class Popularity_Table(Cache):
 	    if time-t > 240:
 		self.remove_count(key)
 
-    def update_t(self, k, time):
-	count, t = self._count[k]
-	self._count[k] = count, time	
+    def increment(self, k, time):
+        if k in self._counter:
+            freq, t = self._counter[k]
+            self._counter[k] = freq + 1, time
+        else:
+            self._counter[k] = 1, time
+
+        
 
 	    
 	    
@@ -1961,6 +1965,7 @@ class Popularity_Table(Cache):
 
     @inheritdoc(Cache)
     def put(self, k):
+        print self._counter[k]
         if not self.has(k):
             if k in self._counter:
                 freq, t = self._counter[k]

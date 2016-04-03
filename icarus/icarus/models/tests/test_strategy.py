@@ -844,15 +844,12 @@ class TestOnPath2(unittest.TestCase):
         hr = strategy.Popularity_Table(self.view, self.controller)
         # receiver 0 requests 2, expect miss
 	# looks for it in 1, should not be in 2 or 3 yet, finds it in source 4
-        loc = self.view.content_locations(2)
-	print loc        
 	hr.process_event(1, 0, 2, True)
         loc = self.view.content_locations(2)
-	print loc
-        self.assertEquals(len(loc), 3)
+        self.assertEquals(len(loc), 1)
         self.assertNotIn(1, loc)
-        self.assertIn(2, loc)
-        self.assertIn(3, loc)
+        self.assertNotIn(2, loc)
+        self.assertNotIn(3, loc)
         self.assertIn(4, loc)
         summary = self.collector.session_summary()
         exp_req_hops = set(((0, 1), (1, 2), (2, 3), (3, 4)))
@@ -863,7 +860,19 @@ class TestOnPath2(unittest.TestCase):
         self.assertSetEqual(exp_cont_hops, set(cont_hops))
         self.assertEqual(4, summary['serving_node'])
 	#doesnt work, caches everywhere along path except for node next to requestor
-	
+	#Run 102 requests which should cause item 2 to cache everywhere since all thresholds will be met!
+        for i in range(0,101):
+            hr.process_event(1, 0, 2, True)
+
+        loc = self.view.content_locations(2)
+        self.assertEquals(len(loc), 1)
+        self.assertIn(1, loc)
+        self.assertIn(2, loc)
+        self.assertIn(3, loc)
+        self.assertIn(4, loc)
+
+
+
 	# moves content to node 3 - 1 hop closer to receiver
         hr.process_event(1, 0, 2, True)
         loc = self.view.content_locations(2)

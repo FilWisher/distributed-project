@@ -268,6 +268,8 @@ class NetworkView(object):
         if node in self.model.cache:
             return self.model.cache[node].dump()
 
+    def dump_table(self, node):
+       return self.model.cache[node].dump_pop_table
 
 class NetworkModel(object):
     """Models the internal state of the network.
@@ -523,7 +525,7 @@ class NetworkController(object):
                 if self.session['log']:
                     self.collector.cache_hit(node)
                 return cache_hit
-            elif !cache_hit and name != 'source':
+            elif not cache_hit and name != 'source':
                 if self.session['log']:
                     self.collector.cache_miss(node)
                 return cache_hit
@@ -580,6 +582,8 @@ class NetworkController(object):
 	if v in self.model.cache:
 	    if self.model.cache[v].compare_count(self.session['content']):
     	        adj = self.model.neighbours[v]
+                print "----"
+                print v
     	        for adj_nodes in adj:
 	            if adj_nodes in self.model.cache:
 	    	        self.put_content(adj_nodes)
@@ -591,5 +595,7 @@ class NetworkController(object):
 
     def cache_recent_update(self, node, time):
 	if node in self.model.cache:
-	    self.model.cache[node].update_t(self.session['content'],t)
+	    self.model.cache[node].increment(self.session['content'],time)
 	
+
+    
