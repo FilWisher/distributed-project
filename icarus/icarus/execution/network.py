@@ -519,11 +519,11 @@ class NetworkController(object):
         name, props = fnss.get_stack(self.model.topology, node)
         if node in self.model.cache:
             cache_hit = self.model.cache[node].get(self.session['content'])
-            if cache_hit:
+            if cache_hit and name != 'source': 
                 if self.session['log']:
                     self.collector.cache_hit(node)
                 return cache_hit
-            elif name != 'source':
+            elif !cache_hit and name != 'source':
                 if self.session['log']:
                     self.collector.cache_miss(node)
                 return cache_hit
@@ -583,6 +583,13 @@ class NetworkController(object):
     	        for adj_nodes in adj:
 	            if adj_nodes in self.model.cache:
 	    	        self.put_content(adj_nodes)
-	#TODO: try to implement this in strategy for clarity and consistency
     
 
+    def decrement(self, amount):
+	for node in self.model.cache:
+	    self.model.cache[node].decrement(amount)
+
+    def cache_recent_update(self, node, time):
+	if node in self.model.cache:
+	    self.model.cache[node].update_t(self.session['content'],t)
+	
