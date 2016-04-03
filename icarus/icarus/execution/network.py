@@ -499,6 +499,8 @@ class NetworkController(object):
             The evicted object or *None* if no contents were evicted.
         """
         if node in self.model.cache:
+            if self.session['log']:
+                self.collector.add_content(node, self.session['content'])
             return self.model.cache[node].put(self.session['content'])
     
     def get_content(self, node):
@@ -516,19 +518,18 @@ class NetworkController(object):
         """
         name, props = fnss.get_stack(self.model.topology, node)
         if node in self.model.cache:
-            #here
-	    if name == 'source' and self.session['content'] in props['contents']:
-	        if self.collector is not None and self.session['log']:
-	            self.collector.server_hit(node)
-	    elif name == 'router':
-	        cache_hit = self.model.cache[node].get(self.session['content'])
-                if cache_hit:
-                    if self.session['log']:
-                        self.collector.cache_hit(node)
-                else:
-                    if self.session['log']:
-                        self.collector.cache_miss(node)
+            cache_hit = self.model.cache[node].get(self.session['content'])
+            if cache_hit and name != 'source': 
+                if self.session['log']:
+                    self.collector.cache_hit(node)
                 return cache_hit
+            elif !cache_hit and name != 'source':
+                if self.session['log']:
+                    self.collector.cache_miss(node)
+                return cache_hit
+        if name == 'source' and self.session['content'] in props['contents']:
+            if self.collector is not None and self.session['log']:
+                self.collector.server_hit(node)
             return True
         else:
             return False
@@ -547,6 +548,8 @@ class NetworkController(object):
             *True* if the entry was in the cache, *False* if it was not.
         """
         if node in self.model.cache:
+            if self.session['log']:
+                self.collector.remove_content(node, self.session['content'])
             return self.model.cache[node].remove(self.session['content'])
 
     def end_session(self, success=True):
@@ -580,6 +583,13 @@ class NetworkController(object):
     	        for adj_nodes in adj:
 	            if adj_nodes in self.model.cache:
 	    	        self.put_content(adj_nodes)
-	#TODO: try to implement this in strategy for clarity and consistency
     
 
+    def decrement(self, amount):
+	for node in self.model.cache:
+	    self.model.cache[node].decrement(amount)
+
+    def cache_recent_update(self, node, time):
+	if node in self.model.cache:
+	    self.model.cache[node].update_t(self.session['content'],t)
+	

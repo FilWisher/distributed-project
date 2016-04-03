@@ -1891,8 +1891,10 @@ class Popularity_Table(Cache):
     def __init__(self, maxlen, **kwargs):
         self._counter = {}
 	self._cache = set()
-        self.threshold = 500
+        self.threshold = 100
 	self.t = 0
+	self.time_limit = 30   #TODO: should depend on 
+	self.clock = 0
         self._maxlen = int(maxlen)
         if self._maxlen <= 0:
             raise ValueError('maxlen must be positive')
@@ -1900,7 +1902,6 @@ class Popularity_Table(Cache):
     """------------------------METHODS SPECIFIC FOR POPULARITY TABLE---------------------"""
     @inheritdoc(Cache)
     def get(self, k):
-        self.t += 1
         if k in self._counter:
             freq, t = self._counter[k]
             self._counter[k] = freq + 1, t
@@ -1912,14 +1913,31 @@ class Popularity_Table(Cache):
             return False
 
     def compare_count(self,k):
-	if not self.has_count(k):
-	    return False
-	elif self._counter[k]>self.threshold:
-	    self.remove(k)
+	if self._counter[k]>self.threshold:
+	    self.remove_count(k)
 	    return True
 	else:
 	    return False
-   
+
+    def remove_count(self,k):
+	count, t = self._counter[k]
+	self._counter[k]= 0, t
+
+    def decrement(self, amount, time):
+	for key in self._counter:
+	    count, t = self._counter[key]
+	    self._counter[key] = count-amount, t 
+	    if count-amount <= 0: 	    
+		self.remove_count(key)
+	    if time-t > 240:
+		self.remove_count(key)
+
+    def update_t(self, k, time):
+	count, t = self._count[k]
+	self._count[k] = count, time	
+
+	    
+	    
     """-------------------------------BASIC     METHODS------------------------------------"""
     @inheritdoc(Cache)
     def __len__(self):
@@ -1937,7 +1955,6 @@ class Popularity_Table(Cache):
     @inheritdoc(Cache)
     def has(self, k):
         return k in self._cache
-
 
     def has_count(self, k):
 	return k in self._counter

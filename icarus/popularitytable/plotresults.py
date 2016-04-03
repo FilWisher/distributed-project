@@ -318,12 +318,7 @@ def run(config, results, plotdir):
 	plot_cache_hits_vs_alpha(resultset, "GEANT", cache_size, alphas, strategies, plotdir)
         plot_link_load_vs_alpha(resultset, "GEANT", cache_size, alphas, strategies, plotdir)
         plot_latency_vs_alpha(resultset, "GEANT", cache_size, alphas, strategies, plotdir)
-#    print "222222222222222222222222222222222222222222222222222222222222"
-#    for topology in topologies:
-#        for alpha in alphas:
-#            plot_cache_hits_vs_cache_size(resultset, topology, alpha, cache_sizes, strategies, plotdir)
-#            plot_link_load_vs_cache_size(resultset, topology, alpha, cache_sizes, strategies, plotdir)
-#            plot_latency_vs_cache_size(resultset, topology, alpha, cache_sizes, strategies, plotdir)
+
     for cache_size in cache_sizes:
         for alpha in alphas:
             plot_cache_hits_vs_topology(resultset, alpha, cache_size, topologies, strategies, plotdir)
