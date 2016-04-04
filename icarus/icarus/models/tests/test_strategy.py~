@@ -1224,12 +1224,12 @@ class TestWing(unittest.TestCase):
         loc = self.view.content_locations(2)
         self.assertEquals(len(loc), 5)
         self.assertNotIn(1, loc)
-        self.assertIn(2, loc)
-        self.assertIn(3, loc)
+        self.assertNotIn(2, loc)
+        self.assertNotIn(3, loc)
         self.assertIn(4, loc)
 	self.assertNotIn(5, loc)
 	self.assertIn(6, loc)
-	self.assertNotIn(7, loc)
+	self.assertIn(7, loc)
 	self.assertIn(8, loc)
 
        
