@@ -12,6 +12,52 @@ import fnss
 import icarus.models as strategy
 from icarus.execution import NetworkModel, NetworkView, NetworkController, TestCollector
 
+def star_topology():  #havent used this one yet
+    topology = fnss.star_topology(6)
+    source = 4
+    receivers = (0, 5) 
+    caches = (1, 2, 3)
+    contents = caches
+    fnss.add_stack(topology, source, 'source', {'contents': contents})
+    for v in caches:
+        fnss.add_stack(topology, v, 'router', {'cache_size': 1})
+    for v in receivers:
+        fnss.add_stack(topology, v, 'receiver', {})
+    return topology
+
+def lisa_topology():
+    topology = fnss.Topology()
+    topology.add_path([0, 2, 4, 6, 8, 7,  5, 3, 1])
+    topology.add_edge(2, 3)
+    topology.add_edge(0, 1)
+    topology.add_edge(8, 1)
+    receivers = (0, 1, 5)
+    source = (6) 
+    caches = (2, 3, 4, 7,8)
+    contents = caches
+    fnss.add_stack(topology, source, 'source', {'contents': contents})
+    for v in caches:
+        fnss.add_stack(topology, v, 'router', {'cache_size': 1})
+    for v in receivers:
+        fnss.add_stack(topology, v, 'receiver', {})
+    return topology
+
+def wing_topology():
+    topology = fnss.Topology()
+    topology.add_path([0, 2, 4, 6, 8, 7,  5, 3, 1])
+    topology.add_edge(2, 3)
+    topology.add_edge(0, 1)
+    receivers = (0, 1, 5)
+    source = (6) 
+    caches = (2, 3, 4, 7,8)
+    contents = caches
+    fnss.add_stack(topology, source, 'source', {'contents': contents})
+    for v in caches:
+        fnss.add_stack(topology, v, 'router', {'cache_size': 1})
+    for v in receivers:
+        fnss.add_stack(topology, v, 'receiver', {})
+    return topology
+
 
 def on_path_topology():
     """Return topology for testing on-path caching strategies
@@ -80,7 +126,7 @@ def nrr_topology():
     receivers = (0, 1)
     source = (6) 
     caches = (2, 3, 4, 5)
-    contents = (1, 2, 3, 4)
+    contents = caches
     fnss.add_stack(topology, source, 'source', {'contents': contents})
     for v in caches:
         fnss.add_stack(topology, v, 'router', {'cache_size': 1})
@@ -844,7 +890,7 @@ class TestOnPath2(unittest.TestCase):
         hr = strategy.Popularity_Table(self.view, self.controller)
         
         # receiver 0 requests 2, expect miss
-	# looks for it in 1, should not be in 2 or 3 yet, finds it in source 4
+
 	hr.process_event(1, 0, 2, True)
         loc = self.view.content_locations(2)
         self.assertEquals(len(loc), 1)
@@ -885,6 +931,311 @@ class TestOnPath2(unittest.TestCase):
         print loc
         #self.assertEquals(len(loc), 21)
 
-
+	
         print "Worked this far!!!"
+
+class TestOffPath2(unittest.TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        pass
+
+    @classmethod
+    def tearDownClass(cls):
+        pass    
+    
+    def setUp(self):
+        topology = off_path_topology()
+        model = NetworkModel(topology, cache_policy={'name': 'POPULARITY_TABLE'})
+        self.view = NetworkView(model)
+        self.controller = NetworkController(model)
+        self.collector = TestCollector(self.view)
+        self.controller.attach_collector(self.collector)
+        
+    def tearDown(self):
+        pass
+
+    def test_poptable(self):
+        hr = strategy.Popularity_Table(self.view, self.controller)
+        
+        # receiver 0 requests 2, expect miss
+
+	hr.process_event(1, 0, 2, True)
+        loc = self.view.content_locations(2)
+        self.assertEquals(len(loc), 1)
+        self.assertNotIn(1, loc)
+        self.assertNotIn(2, loc)
+        self.assertNotIn(3, loc)
+        self.assertIn(4, loc)
+	self.assertNotIn(5, loc)
+        summary = self.collector.session_summary()
+        exp_req_hops = set(((0,5), (5,4)))
+        exp_cont_hops = set(((4,5), (5,0)))
+        req_hops = summary['request_hops']
+        cont_hops = summary['content_hops']
+        self.assertSetEqual(exp_req_hops, set(req_hops))
+        self.assertSetEqual(exp_cont_hops, set(cont_hops))
+        self.assertEqual(4, summary['serving_node'])
+	#doesnt work, caches everywhere along path except for node next to requestor
+	#Run 102 requests which should cause item 2 to cache everywhere since all thresholds will be met!
+        for i in range(0,self.view.get_threshold()):
+            hr.process_event(1, 0, 2, True)
+
+        loc = self.view.content_locations(2)
+        self.assertEquals(len(loc), 3)
+        self.assertNotIn(1, loc)
+        self.assertNotIn(2, loc)
+        self.assertIn(3, loc)
+        self.assertIn(4, loc)
+	self.assertIn(5, loc)
+       
+
+class TestNRR(unittest.TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        pass
+
+    @classmethod
+    def tearDownClass(cls):
+        pass    
+    
+    def setUp(self):
+        topology = nrr_topology()
+        model = NetworkModel(topology, cache_policy={'name': 'POPULARITY_TABLE'})
+        self.view = NetworkView(model)
+        self.controller = NetworkController(model)
+        self.collector = TestCollector(self.view)
+        self.controller.attach_collector(self.collector)
+        
+    def tearDown(self):
+        pass
+
+    def test_poptable(self):
+        hr = strategy.Popularity_Table(self.view, self.controller)
+        
+        # receiver 0 requests 2, expect miss
+
+	hr.process_event(1, 0, 2, True)
+        loc = self.view.content_locations(2)
+        self.assertEquals(len(loc), 1)
+        self.assertNotIn(1, loc)
+        self.assertNotIn(2, loc)
+        self.assertNotIn(3, loc)
+        self.assertNotIn(4, loc)
+	self.assertNotIn(5, loc)
+	self.assertIn(6, loc)
+        summary = self.collector.session_summary()
+
+        exp_req_hops = set([(4,6), (2, 4), (0, 2)])
+       	exp_cont_hops = set([(4, 2), (2, 0), (6, 4)])
+	#print exp_req_hops
+	#print exp_cont_hops
+        req_hops = summary['request_hops']
+        cont_hops = summary['content_hops']
+
+        self.assertSetEqual(exp_req_hops, set(req_hops))
+        self.assertSetEqual(exp_cont_hops, set(cont_hops))
+        self.assertEqual(6, summary['serving_node'])
+	#doesnt work, caches everywhere along path except for node next to requestor
+	#Run 102 requests which should cause item 2 to cache everywhere since all thresholds will be met!
+        for i in range(0,self.view.get_threshold()):
+            hr.process_event(1, 0, 2, True)
+
+        loc = self.view.content_locations(2)
+        self.assertEquals(len(loc), 5)
+        self.assertNotIn(1, loc)
+        self.assertIn(2, loc)
+        self.assertIn(3, loc)
+        self.assertIn(4, loc)
+	self.assertIn(5, loc)
+	self.assertIn(6, loc)
+
+class TestLisa(unittest.TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        pass
+
+    @classmethod
+    def tearDownClass(cls):
+        pass    
+    
+    def setUp(self):
+        topology = lisa_topology()
+        model = NetworkModel(topology, cache_policy={'name': 'POPULARITY_TABLE'})
+        self.view = NetworkView(model)
+        self.controller = NetworkController(model)
+        self.collector = TestCollector(self.view)
+        self.controller.attach_collector(self.collector)
+        
+    def tearDown(self):
+        pass
+
+    def test_poptable(self):
+        hr = strategy.Popularity_Table(self.view, self.controller)
+        
+        # receiver 0 requests 2, expect miss
+
+	hr.process_event(1, 0, 2, True)
+        loc = self.view.content_locations(2)
+        self.assertEquals(len(loc), 1)
+        self.assertNotIn(1, loc)
+        self.assertNotIn(2, loc)
+        self.assertNotIn(3, loc)
+        self.assertNotIn(4, loc)
+	self.assertNotIn(5, loc)
+	self.assertIn(6, loc)
+        self.assertNotIn(7, loc)
+	self.assertNotIn(8, loc)
+        summary = self.collector.session_summary()
+
+        exp_req_hops = set([(0,1), (1,8), (8, 6)])
+       	exp_cont_hops = set([(6,8), (8,1), (1,0)])
+        req_hops = summary['request_hops']
+        cont_hops = summary['content_hops']
+	#print req_hops
+	#print cont_hops
+
+        self.assertSetEqual(exp_req_hops, set(req_hops))
+        self.assertSetEqual(exp_cont_hops, set(cont_hops))
+        self.assertEqual(6, summary['serving_node'])
+	#doesnt work, caches everywhere along path except for node next to requestor
+	#Run 102 requests which should cause item 2 to cache everywhere since all thresholds will be met!
+        for i in range(0,self.view.get_threshold()):
+            hr.process_event(1, 0, 2, True)
+
+        loc = self.view.content_locations(2)
+        self.assertEquals(len(loc), 4)
+        self.assertNotIn(1, loc)
+        self.assertNotIn(2, loc)
+        self.assertNotIn(3, loc)
+        self.assertIn(4, loc)
+	self.assertNotIn(5, loc)
+	self.assertIn(6, loc)
+	self.assertIn(7, loc)
+	self.assertIn(8, loc)
+
+
+class TestLisa2(unittest.TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        pass
+
+    @classmethod
+    def tearDownClass(cls):
+        pass    
+    
+    def setUp(self):
+        topology = lisa_topology()
+        model = NetworkModel(topology, cache_policy={'name': 'POPULARITY_TABLE'})
+        self.view = NetworkView(model)
+        self.controller = NetworkController(model)
+        self.collector = TestCollector(self.view)
+        self.controller.attach_collector(self.collector)
+        
+    def tearDown(self):
+        pass
+
+    def test_poptable(self):
+        hr = strategy.Popularity_Table(self.view, self.controller)
+        
+        # receiver 0 requests 2, expect miss
+
+	hr.process_event(1, 5, 2, True)
+        loc = self.view.content_locations(2)
+        self.assertEquals(len(loc), 1)
+        self.assertNotIn(1, loc)
+        self.assertNotIn(2, loc)
+        self.assertNotIn(3, loc)
+        self.assertNotIn(4, loc)
+	self.assertNotIn(5, loc)
+	self.assertIn(6, loc)
+        self.assertNotIn(7, loc)
+	self.assertNotIn(8, loc)
+        summary = self.collector.session_summary()
+
+
+        self.assertEqual(6, summary['serving_node'])
+	#doesnt work, caches everywhere along path except for node next to requestor
+	#Run 102 requests which should cause item 2 to cache everywhere since all thresholds will be met!
+        for i in range(0,self.view.get_threshold()):
+            hr.process_event(1, 0, 2, True)
+
+        loc = self.view.content_locations(2)
+        self.assertEquals(len(loc), 4)
+        self.assertNotIn(1, loc)
+        self.assertNotIn(2, loc)
+        self.assertNotIn(3, loc)
+        self.assertIn(4, loc)
+	self.assertNotIn(5, loc)
+	self.assertIn(6, loc)
+	self.assertIn(7, loc)
+	self.assertIn(8, loc)
+
+
+class TestWing(unittest.TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        pass
+
+    @classmethod
+    def tearDownClass(cls):
+        pass    
+    
+    def setUp(self):
+        topology = wing_topology()
+        model = NetworkModel(topology, cache_policy={'name': 'POPULARITY_TABLE'})
+        self.view = NetworkView(model)
+        self.controller = NetworkController(model)
+        self.collector = TestCollector(self.view)
+        self.controller.attach_collector(self.collector)
+        
+    def tearDown(self):
+        pass
+
+    def test_poptable(self):
+        hr = strategy.Popularity_Table(self.view, self.controller)
+        
+        # receiver 0 requests 2, expect miss
+
+	hr.process_event(1, 5, 2, True)
+        loc = self.view.content_locations(2)
+        self.assertEquals(len(loc), 1)
+        self.assertNotIn(1, loc)
+        self.assertNotIn(2, loc)
+        self.assertNotIn(3, loc)
+        self.assertNotIn(4, loc)
+	self.assertNotIn(5, loc)
+	self.assertIn(6, loc)
+        self.assertNotIn(7, loc)
+	self.assertNotIn(8, loc)
+        summary = self.collector.session_summary()
+
+
+        self.assertEqual(6, summary['serving_node'])
+	#doesnt work, caches everywhere along path except for node next to requestor
+	#Run 102 requests which should cause item 2 to cache everywhere since all thresholds will be met!
+        for i in range(0,self.view.get_threshold()):
+            hr.process_event(1, 0, 2, True)
+
+        loc = self.view.content_locations(2)
+        self.assertEquals(len(loc), 5)
+        self.assertNotIn(1, loc)
+        self.assertIn(2, loc)
+        self.assertIn(3, loc)
+        self.assertIn(4, loc)
+	self.assertNotIn(5, loc)
+	self.assertIn(6, loc)
+	self.assertNotIn(7, loc)
+	self.assertIn(8, loc)
+
+       
+
+
+
+       
+
 
