@@ -2,6 +2,9 @@
 <meta charset="utf-8">
 <head>
     <title>Network Topology</title>
+
+     <link rel="stylesheet" type="text/css" href="http://fonts.googleapis.com/css?family=Nunito">
+
 </head>
 <style>
 
@@ -11,6 +14,7 @@
     left:0;
     right:0;
     position:fixed;
+    background-color: "#707070";
   }
 
   .node {
@@ -25,14 +29,23 @@
 
   .legend rect {
     fill:white;
-    stroke:white;
+    stroke:black;
+  }
+
+  .node .popup {
+    display: none;
+  }
+
+  .node:hover .popup {
+    display: block;
   }
 
 </style>
 <body>
 
+
 <div id="option">
-    <input name="updateButton" 
+    <input name="" 
            type="button" 
            value="Update" 
            onclick="update_colour()" />
@@ -41,6 +54,10 @@
 <script type="text/javascript" src="../d3 source code/d3.min.js"></script>
 <script src="../d3 examples/d3.legend.js"></script>
 <script>
+
+  function capitalizeFirstLetter(string) {
+    return string.charAt(0).toUpperCase() + string.slice(1);
+  }
 
     var STD_NODE_SIZE = 4;
 
@@ -80,7 +97,6 @@
           .append("circle")
           .attr("class", "node")
           .attr("data-legend",function(d) { return d.type;})
-          //.attr("r", 5)
           .attr("r", function(d){
               var node_size;
               if (d.type == "router") { 
@@ -124,30 +140,46 @@
           });
 
       node.append("title")
-          .text(function(d) { return d.name; })
+          .text(function(d) { 
+            if (d.type == "router") {
+              return "Node Type: " + capitalizeFirstLetter(d.type) + 
+                " \nCache Size: " + d.cache_size + 
+                " \nNode ID: " + d.name
+            } else {
+              return "Node Type: " + capitalizeFirstLetter(d.type)  + 
+                " \nNode ID: " + d.name
+            }
+            }) //return d.type; })
+          .style("visibility", "hidden");
+          
 
+      //ticks refers to passage of time, note mouse
+      //this updates the position of the nodes based on the rules of the physics engine (a lot of hidden data)
       force.on("tick", function() {
         link.attr("x1", function(d) { return d.source.x; })
             .attr("y1", function(d) { return d.source.y; })
             .attr("x2", function(d) { return d.target.x; })
             .attr("y2", function(d) { return d.target.y; });
+        /*
         link.attr("x1", function(d) { return d.source.x; })
             .attr("y1", function(d) { return d.source.y; })
             .attr("x2", function(d) { return d.target.x; })
             .attr("y2", function(d) { return d.target.y; });
-
+        */
         node.attr("cx", function(d) { return d.x; })
             .attr("cy", function(d) { return d.y; });     
 
       });
 
-
     });
 
+    var updatedColour = false;
+
     function update_colour() {
+        updatedColour = !updatedColour;
+        if (updatedColour) {
         canvas.selectAll(".node")
             .transition()
-
             .style("fill", function(d){
               var node_colour;
               if (d.type == "router") { 
@@ -159,6 +191,9 @@
             })
             .duration(1000)
             .delay(100)
+        } else {
+
+        }
     }
 
     // Add title    
@@ -166,21 +201,21 @@
           .attr("class", "title")
           .attr("x", 40)
           .attr("y", 40)
-          .attr("font-size", "28px")
-          .style("font-family", "Nunito")
           .style("fill", "#707070")
+          .text("ICN Simulation")
+          .attr("font-size", "26px")
           .style("font-weight", 300)
-          .text("Icarus Network Simulation: Topology");
+          .style("font-family", "Nunito")
+          //.sytle("font-weight", "Bold");
 
     legend = canvas.append("g")
                     .attr("class","legend")
                     .attr("transform","translate(50,80)")
-                    .attr("font-size", "16px")
-                    .style("font-family", "Nunito")
-                    .style("fill", "#707070")
-                    .style("font-weight", 300)
-                    .style("text-transform", "capitalize")
                     .call(d3.legend)      
+                    .style("font-size", "13px")
+                    .style("font-family", "Nunito")
+                    //.style("fill", "#707070")
+                    .style("text-transform", "capitalize");
 
     setTimeout(function() { 
       legend.attr("data-style-padding",10)
