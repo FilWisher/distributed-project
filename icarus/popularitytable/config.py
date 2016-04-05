@@ -79,20 +79,27 @@ TOPOLOGIES =  [
 # List of caching and routing strategies
 # The code is located in ./icarus/models/strategy.py
 STRATEGIES = [
-     'LCE',             # Leave Copy Everywhere
+     #'LCE',              # Leave Copy Everywhere
      #'NO_CACHE',        # No caching, shorest-path routing
      #'HR_SYMM',         # Symmetric hash-routing
      #'HR_ASYMM',        # Asymmetric hash-routing
      #'HR_MULTICAST',    # Multicast hash-routing
      #'HR_HYBRID_AM',    # Hybrid Asymm-Multicast hash-routing
      #'HR_HYBRID_SM',    # Hybrid Symm-Multicast hash-routing
-     'POPULARITY_TABLE',# Most popular caching
-     'PROB_CACHE',      # ProbCache
-     'LCD',             # Leave Copy Down
+     #'PROB_CACHE',       # ProbCache
+     #'LCD',              # Leave Copy Down
      #'RAND_CHOICE',     # Random choice: cache in one random cache on path
      #'RAND_BERNOULLI',  # Random Bernoulli: cache randomly in caches on path
+     'POPULARITY_TABLE',# request neighbours node to cache without acceptance policy
+     'LOCAL_POPULARITY', # cache at itself 
+     'POPULARITY_TABLE_ACCEPTANCE', #request neighbours node to cache with acceptance policy
              ]
 
+POP = [
+     'POPULARITY_TABLE',# request neighbours node to cache without acceptance policy
+     'LOCAL_POPULARITY', # cache at itself 
+     'POPULARITY_TABLE_ACCEPTANCE', #request neighbours node to cache with acceptance policy
+             ]
 
 # Queue of experiments
 EXPERIMENT_QUEUE = deque()
@@ -111,7 +118,7 @@ for alpha in ALPHA:
     for strategy in STRATEGIES:
         for topology in TOPOLOGIES:
             for network_cache in NETWORK_CACHE:
-		if strategy == 'POPULARITY_TABLE':
+		if strategy in POP:
 		    default['cache_policy']['name'] = 'POPULARITY_TABLE'
 		else:
 		    default['cache_policy']['name'] = 'LRU'

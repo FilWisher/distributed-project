@@ -598,5 +598,20 @@ class NetworkController(object):
 	if node in self.model.cache:
 	    self.model.cache[node].increment(self.session['content'],time)
 	
+    """-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v"""
+    def check_local_p(self,v):
+	if v in self.model.cache:
+	    if self.model.cache[v].compare_count(self.session['content']):
+		self.put_content(v)
+    """-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^"""
+    """-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v"""
+    def check_neighbours_threshold(self, v):		
+	if v in self.model.cache:
+	    if self.model.cache[v].compare_count(self.session['content']):
+		adj = self.model.neighbours[v]
+		for adj_nodes in adj:
+		    if adj_nodes in self.model.cache:
+	    	        if self.model.cache[adj_nodes].pass_threshold_a(self.session['content']):
+  			    self.put_content(adj_nodes)
+    """-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^"""
 
-    

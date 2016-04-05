@@ -28,7 +28,9 @@ __all__ = [
        'RandomChoice',
        'NearestReplicaRouting',
        'WingLizaAlgo',
-       'Popularity_Table'
+       'Popularity_Table',
+       'Local_Popularity',
+       'Popularity_Table_Acceptance',
            ]
 
 #TODO: Implement BaseOnPath to reduce redundant code
@@ -887,15 +889,13 @@ class Popularity_Table(Strategy):
         super(Popularity_Table, self).__init__(view, controller)
         self.cache_size = view.cache_nodes(size=True)  
 	self.clock = 0    
-    	self.dec_per_sec = 1  #TODO: should depend on request rate(change manually for the time being)
+    	self.dec_per_sec = 0.5 #TODO: should depend on request rate(change manually for the time being)
 	self.count = 0
     @inheritdoc(Strategy)
     def process_event(self, time, receiver, content, log):
 	# decrement popularity score and update internal clock 
-	if time - self.clock >= 120:
-            print "hello"	
-            #dec = (time - self.clock)*self.dec_per_sec
-            dec = 120
+	if time - self.clock >= 120:	
+            dec = (time - self.clock)*self.dec_per_sec
             self.controller.decrement(dec, time)
             self.clock = time
 
@@ -925,5 +925,97 @@ class Popularity_Table(Strategy):
             self.controller.forward_content_hop(u, v)
 	    self.controller.check_popularity_table(u)
         self.controller.end_session() 
+    """--------------------------------------local start-----------------------------------"""
+@register_strategy('LOCAL_POPULARITY')
+class Local_Popularity(Strategy):
 
-        
+    @inheritdoc(Strategy)
+    def __init__(self, view, controller, **kwargs):
+        super(Local_Popularity, self).__init__(view, controller)
+        self.cache_size = view.cache_nodes(size=True)  
+	self.clock = 0    
+    	self.dec_per_sec = 0.5
+	self.count = 0
+    @inheritdoc(Strategy)
+    def process_event(self, time, receiver, content, log):
+	# decrement popularity score and update internal clock 
+	if time - self.clock >= 120:	
+            dec = (time - self.clock)*self.dec_per_sec
+            self.controller.decrement(dec, time)
+            self.clock = time
+
+	
+	# get all required data
+        source = self.view.content_source(content)
+        path = self.view.shortest_path(receiver, source)
+        # Route requests to original source and queries caches on the path
+        self.controller.start_session(time, receiver, content, log)
+        for hop in range(1, len(path)):
+            u = path[hop - 1]
+            v = path[hop]
+            self.controller.forward_request_hop(u, v)
+            if self.view.has_cache(v):
+		self.controller.cache_recent_update(v,time)
+                if self.controller.get_content(v):
+                    serving_node = v
+                    break        
+        else:
+            # No cache hits, get content from source
+            self.controller.get_content(v)
+            serving_node = v
+
+        # Return content
+        path =  list(reversed(self.view.shortest_path(receiver, serving_node)))
+	for u, v in path_links(path):
+            self.controller.forward_content_hop(u, v)
+	    self.controller.check_local_p(v)
+        self.controller.end_session() 
+    """--------------------------------------local   end-----------------------------------"""        
+       
+    """--------------------------------------Acceptance start------------------------------"""
+@register_strategy('POPULARITY_TABLE_ACCEPTANCE')
+class Popularity_Table_Acceptance(Strategy):
+
+    @inheritdoc(Strategy)
+    def __init__(self, view, controller, **kwargs):
+        super(Popularity_Table_Acceptance, self).__init__(view, controller)
+        self.cache_size = view.cache_nodes(size=True)  
+	self.clock = 0    
+    	self.dec_per_sec = 0.5
+	self.count = 0
+    @inheritdoc(Strategy)
+    def process_event(self, time, receiver, content, log):
+	# decrement popularity score and update internal clock 
+	if time - self.clock >= 120:	
+            dec = (time - self.clock)*self.dec_per_sec
+            self.controller.decrement(dec, time)
+            self.clock = time
+
+	
+	# get all required data
+        source = self.view.content_source(content)
+        path = self.view.shortest_path(receiver, source)
+        # Route requests to original source and queries caches on the path
+        self.controller.start_session(time, receiver, content, log)
+        for hop in range(1, len(path)):
+            u = path[hop - 1]
+            v = path[hop]
+            self.controller.forward_request_hop(u, v)
+            if self.view.has_cache(v):
+		self.controller.cache_recent_update(v,time)
+                if self.controller.get_content(v):
+                    serving_node = v
+                    break        
+        else:
+            # No cache hits, get content from source
+            self.controller.get_content(v)
+            serving_node = v
+
+        # Return content
+        path =  list(reversed(self.view.shortest_path(receiver, serving_node)))
+	for u, v in path_links(path):
+            self.controller.forward_content_hop(u, v)
+	    self.controller.check_neighbours_threshold(u)
+        self.controller.end_session() 
+    """--------------------------------------Acceptance end--------------------------------"""        
+

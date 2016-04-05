@@ -1873,20 +1873,13 @@ def ttl_cache(cache, f_time):
 def ttl_keyval_cache():
     pass
 
-"""---------------------Popularity Table----------------------------------------------"""
+
+    """Popularity-based local caching"""
+    """Cache for Popularity_Table, Local_P and Popularity_Table_acceptance"""
+    """-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v"""
 @register_cache_policy('POPULARITY_TABLE')
 class Popularity_Table(Cache):
-    """PopularityTable's implementation
-	   
-	Self-explanatory but we can always refer to the original MPC paper.
-	
-	Here I have only implemented some low-level operation on the POPULARITY_TABLE object itself.
-	The actual algorithm will be implemented in strategy.py
 
-
-	#TODO: Need to implement popularity table in the source nodes as well, or else no caching will be performed.
-    """
-    
     @inheritdoc(Cache)
     def __init__(self, maxlen, **kwargs):
         self._counter = {}
@@ -1898,9 +1891,10 @@ class Popularity_Table(Cache):
         self._maxlen = int(maxlen)
         if self._maxlen <= 0:
             raise ValueError('maxlen must be positive')
-
-    """------------------------METHODS SPECIFIC FOR POPULARITY TABLE---------------------"""
-
+	
+	self.threshold_a = self.threshold*0.75
+    
+    """Specific Methods"""
     def dump_pop_table(self):
         return self._counter
 
@@ -1940,12 +1934,8 @@ class Popularity_Table(Cache):
             self._counter[k] = freq + 1, time
         else:
             self._counter[k] = 1, time
-
-        
-
-	    
-	    
-    """-------------------------------BASIC     METHODS------------------------------------"""
+   
+    """Basic methods"""
     @inheritdoc(Cache)
     def __len__(self):
         return len(self._cache)
@@ -1993,3 +1983,17 @@ class Popularity_Table(Cache):
     def clear(self):
         self._cache.clear()
         self._counter.clear()
+    """-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^"""
+    """-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v"""
+    """Methods specific for Popularity_Table_Acceptance"""
+    def pass_threshold_a(self,k):
+	if self._counter[k][0]>threshold_a:
+	    return True
+	else:
+	    return False
+    """-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^"""
+
+
+
+
+
