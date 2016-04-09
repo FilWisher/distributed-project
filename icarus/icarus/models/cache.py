@@ -1884,15 +1884,21 @@ class Popularity_Table(Cache):
     def __init__(self, maxlen, **kwargs):
         self._counter = {}
 	self._cache = set()
-        self.threshold = 200
+        self.threshold = 100
+	self.min_threshold = 100
 	self.t = 0
-	self.time_limit = 30
+	self.time_limit = 240
 	self.clock = 0
         self._maxlen = int(maxlen)
 	self.threshold_a = self.threshold*0.75
-	self.p_total_count = 0
         if self._maxlen <= 0:
             raise ValueError('maxlen must be positive')
+	self.alpha = 0.75
+	self.s_1 = 0
+	self.s_11 = 0
+	self.s_2 = 0
+	self.s_22 = 0
+	self.First_time = True
 	
     
     """Specific Methods"""
@@ -1923,18 +1929,32 @@ class Popularity_Table(Cache):
     def decrement(self, amount, time):
 	# dynamic threshold implementation here as well	
 	s_sum = 0
+	number = 0
 	for key in self._counter:
 	    count, t, p_count = self._counter[key]
-	    s_sum += pow(p_count,2)                  
+	    number += 1
+	    s_sum += pow(p_count,1)                  
 	    self._counter[key] = count-amount, t, 0 
 	    if count-amount <= 0: 	    
 		self.remove_count(key)
-	    if time-t > 240:
+	    if time-t > self.time_limit:
 		self.remove_count(key)
-	threshold = s_sum ** 0.5
+	if not number==0: 	
+	    mean = s_sum/number
+	    if self.First_time :	    
+		self.s_11 = mean
+	        self.s_22 = mean
+	        self.First_time = False
+	    k = self.double_exponential(mean,time)
+	    if k < self.min_threshold:
+		self.threshold = self.min_threshold
+	    else:
+		self.threshold = k	
+	    self.clock = time
+	    self.s_11 = self.s_1
+	    self.s_22 = self.s_2
 
     def increment(self, k, time):
-	self.p_total_count += 1
         if k in self._counter:
             freq, t, p_count = self._counter[k]
             self._counter[k] = freq + 1, time, p_count + 1
@@ -2000,6 +2020,11 @@ class Popularity_Table(Cache):
 	    return False
     """-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^"""
 
-
+    """-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v"""
+    def double_exponential(self, mean, time):	
+	self.s_1 = self.alpha*mean + (1-self.alpha)*self.s_11
+	self.s_2 = self.alpha*self.s_1 + (1-self.alpha)*self.s_22
+	return ((2*self.s_1-self.s_2)+(time-self.clock)*(self.alpha/(1-self.alpha))*(self.s_1-self.s_2))
+    """-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^"""
 
 
