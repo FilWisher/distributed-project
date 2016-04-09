@@ -581,13 +581,6 @@ class NetworkController(object):
     def restore_node(self, v):
         raise NotImplementedError('Method not yet implemented')
 
-    def check_popularity_table(self, v):
-	if v in self.model.cache:
-	    if self.model.cache[v].compare_count(self.session['content']):
-    	        adj = self.model.neighbours[v]
-    	        for adj_nodes in adj:
-	            if adj_nodes in self.model.cache:
-	    	        self.put_content(adj_nodes)
     
 
     def decrement(self, amount, time):
@@ -597,6 +590,15 @@ class NetworkController(object):
     def cache_recent_update(self, node, time):
 	if node in self.model.cache:
 	    self.model.cache[node].increment(self.session['content'],time)
+    """-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v"""
+    def check_popularity_table(self, v):
+	if v in self.model.cache:
+	    if self.model.cache[v].compare_count(self.session['content']):
+    	        adj = self.model.neighbours[v]
+    	        for adj_nodes in adj:
+	            if adj_nodes in self.model.cache:
+	    	        self.put_content(adj_nodes)
+
 	
     """-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v"""
     def check_local_p(self,v):
@@ -604,6 +606,7 @@ class NetworkController(object):
 	    if self.model.cache[v].compare_count(self.session['content']):
 		self.put_content(v)
     """-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^"""
+   
     """-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v"""
     def check_neighbours_threshold(self, v):		
 	if v in self.model.cache:

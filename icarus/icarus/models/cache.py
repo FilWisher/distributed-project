@@ -1886,13 +1886,14 @@ class Popularity_Table(Cache):
 	self._cache = set()
         self.threshold = 200
 	self.t = 0
-	self.time_limit = 30   #TODO: should depend on 
+	self.time_limit = 30
 	self.clock = 0
         self._maxlen = int(maxlen)
+	self.threshold_a = self.threshold*0.75
+	self.p_total_count = 0
         if self._maxlen <= 0:
             raise ValueError('maxlen must be positive')
 	
-	self.threshold_a = self.threshold*0.75
     
     """Specific Methods"""
     def dump_pop_table(self):
@@ -1916,24 +1917,29 @@ class Popularity_Table(Cache):
 	    return False
 
     def remove_count(self,k):
-	count, t = self._counter[k]
-	self._counter[k]= 0, t
+	count, t, p_count = self._counter[k]
+	self._counter[k] = 0, t, p_count
 
     def decrement(self, amount, time):
+	# dynamic threshold implementation here as well	
+	s_sum = 0
 	for key in self._counter:
-	    count, t = self._counter[key]
-	    self._counter[key] = count-amount, t 
+	    count, t, p_count = self._counter[key]
+	    s_sum += pow(p_count,2)                  
+	    self._counter[key] = count-amount, t, 0 
 	    if count-amount <= 0: 	    
 		self.remove_count(key)
 	    if time-t > 240:
 		self.remove_count(key)
+	threshold = s_sum ** 0.5
 
     def increment(self, k, time):
+	self.p_total_count += 1
         if k in self._counter:
-            freq, t = self._counter[k]
-            self._counter[k] = freq + 1, time
+            freq, t, p_count = self._counter[k]
+            self._counter[k] = freq + 1, time, p_count + 1
         else:
-            self._counter[k] = 1, time
+            self._counter[k] = 1, time, 1 #TODO: Implement periodic count to determine threshold
    
     """Basic methods"""
     @inheritdoc(Cache)
@@ -1960,13 +1966,13 @@ class Popularity_Table(Cache):
     def put(self, k):
         if not self.has(k):
             if k in self._counter:
-                freq, t = self._counter[k]
-                self._counter[k] = (freq + 1, t)
+                freq, t, p_count = self._counter[k]
+                self._counter[k] = (freq + 1, t, p_count + 1)
             else:
-                self._counter[k] = (1, self.t)
+                self._counter[k] = (1, self.t, 1)
             self._cache.add(k)
             if len(self._cache) > self._maxlen:
-                evicted = min(self._cache, key=lambda x: self._counter[x])
+                evicted = min(self._cache, key=lambda x: self._counter[x][0])
                 self._cache.remove(evicted)
                 return evicted
         return None    
@@ -1984,6 +1990,7 @@ class Popularity_Table(Cache):
         self._cache.clear()
         self._counter.clear()
     """-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^"""
+
     """-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v"""
     """Methods specific for Popularity_Table_Acceptance"""
     def pass_threshold_a(self,k):
@@ -1992,7 +1999,6 @@ class Popularity_Table(Cache):
 	else:
 	    return False
     """-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^"""
-
 
 
 
