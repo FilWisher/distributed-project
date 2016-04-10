@@ -1884,27 +1884,28 @@ class Popularity_Table(Cache):
     def __init__(self, maxlen, **kwargs):
         self._counter = {}
 	self._cache = set()
-        self.threshold = 100
-	self.min_threshold = 100
-	self.t = 0
-	self.time_limit = 240
-	self.clock = 0
+	self.min_threshold = 100 # minimum threshold for sending requests
+        self.threshold = self.min_threshold # varying threshold relative to smoothing
+	self.t = 0 
+	self.time_limit = 240 # time limit for contents that are not requested in a period of time
+	self.clock = 0 # internal clock 
         self._maxlen = int(maxlen)
-	self.threshold_a = self.threshold*0.75
+	self.threshold_constant = 0.75
+	self.threshold_a = self.threshold*self.threshold_constant # 2nd threshold to compare against if this node is being requested to cache
         if self._maxlen <= 0:
             raise ValueError('maxlen must be positive')
-	self.alpha = 0.75
+	# These are variables for exponential smoothing	
+	self.alpha = 0.75 
 	self.s_1 = 0
 	self.s_11 = 0
 	self.s_2 = 0
 	self.s_22 = 0
 	self.First_time = True
 	
-    
-    """Specific Methods"""
+    # for error checking    
     def dump_pop_table(self):
         return self._counter
-
+    # for error checking
     def get_threshold(self):
         return self.threshold
 
@@ -1915,30 +1916,34 @@ class Popularity_Table(Cache):
         else:
             return False
 
+    # method for deciding whether to send requests to cache or not
     def compare_count(self,k):
-	if self._counter[k][0]>self.threshold:
-	    self.remove_count(k)
-	    return True
-	else:
-	    return False
-
+	if k in self._counter:
+	    if self._counter[k][0]>self.threshold:
+	        self.remove_count(k)
+	        return True
+        return False
+    
+    # reset popularity count
     def remove_count(self,k):
 	count, t, p_count = self._counter[k]
 	self._counter[k] = 0, t, p_count
 
+    # decrement popularity
+    # P.S.: Dynamic threshold is being implemented here as well    
     def decrement(self, amount, time):
-	# dynamic threshold implementation here as well	
-	s_sum = 0
-	number = 0
+	s_sum = 0 # for dynamic threshold
+	number = 0 # for dynamic thershold
 	for key in self._counter:
 	    count, t, p_count = self._counter[key]
-	    number += 1
-	    s_sum += pow(p_count,1)                  
+	    number += 1 # make sure do not divide by zero in dynamic thresholds calculation
+	    s_sum += pow(p_count,1) # can just record total periodic count for faster performance but I recorded individual count for future use                  
 	    self._counter[key] = count-amount, t, 0 
 	    if count-amount <= 0: 	    
 		self.remove_count(key)
 	    if time-t > self.time_limit:
 		self.remove_count(key)
+    # comment out below for static threshold
 	if not number==0: 	
 	    mean = s_sum/number
 	    if self.First_time :	    
@@ -1946,22 +1951,27 @@ class Popularity_Table(Cache):
 	        self.s_22 = mean
 	        self.First_time = False
 	    k = self.double_exponential(mean,time)
-	    if k < self.min_threshold:
-		self.threshold = self.min_threshold
-	    else:
-		self.threshold = k	
+	    self.update_thresholds(k)	
 	    self.clock = time
 	    self.s_11 = self.s_1
-	    self.s_22 = self.s_2
+	    self.s_22 = self.s_2	
 
+    # update RRT(Recent Request Time) and increase content's popularity according to requests
     def increment(self, k, time):
         if k in self._counter:
             freq, t, p_count = self._counter[k]
             self._counter[k] = freq + 1, time, p_count + 1
         else:
-            self._counter[k] = 1, time, 1 #TODO: Implement periodic count to determine threshold
+            self._counter[k] = 1, time, 1 
    
-    """Basic methods"""
+    # update thresholds (This is called in decrement to make sure both thresholds get updated together)
+    def update_thresholds(self,k):
+	if  k < self.min_threshold:
+	    self.threshold = self.min_threshold
+	else:
+	    self.threshold = k
+	self.threshold_a = self.threshold*self.threshold_constant
+
     @inheritdoc(Cache)
     def __len__(self):
         return len(self._cache)
@@ -2009,22 +2019,16 @@ class Popularity_Table(Cache):
     def clear(self):
         self._cache.clear()
         self._counter.clear()
-    """-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^"""
 
-    """-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v"""
-    """Methods specific for Popularity_Table_Acceptance"""
+    # This is called when this node is a neighbour of another node (2nd threshold)
     def pass_threshold_a(self,k):
-	if self._counter[k][0]>threshold_a:
-	    return True
-	else:
-	    return False
-    """-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^"""
+	if k in self._counter:
+  	    if self._counter[k][0]>threshold_a:
+	        return True
+        return False
 
-    """-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v"""
+    # double exponential smoothing for periodic popularity count
     def double_exponential(self, mean, time):	
 	self.s_1 = self.alpha*mean + (1-self.alpha)*self.s_11
 	self.s_2 = self.alpha*self.s_1 + (1-self.alpha)*self.s_22
 	return ((2*self.s_1-self.s_2)+(time-self.clock)*(self.alpha/(1-self.alpha))*(self.s_1-self.s_2))
-    """-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^"""
-
-

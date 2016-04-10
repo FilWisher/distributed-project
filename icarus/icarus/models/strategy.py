@@ -925,6 +925,7 @@ class Popularity_Table(Strategy):
             self.controller.forward_content_hop(u, v)
 	    self.controller.check_popularity_table(u)
         self.controller.end_session() 
+
     """--------------------------------------local start-----------------------------------"""
 @register_strategy('LOCAL_POPULARITY')
 class Local_Popularity(Strategy):

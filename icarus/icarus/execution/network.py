@@ -582,15 +582,18 @@ class NetworkController(object):
         raise NotImplementedError('Method not yet implemented')
 
     
-
+    # decrement the populariy of contents in every node
     def decrement(self, amount, time):
 	for node in self.model.cache:
 	    self.model.cache[node].decrement(amount, time)
 
+    # update the RRT(Recent Request Time) and popularity for a particular piece of content
+    # Must call this alongside with controller.get_content for correct results
     def cache_recent_update(self, node, time):
 	if node in self.model.cache:
 	    self.model.cache[node].increment(self.session['content'],time)
-    """-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v"""
+
+    # popularity-based (cache: neighbour nodes)(no. of threshold: 1)
     def check_popularity_table(self, v):
 	if v in self.model.cache:
 	    if self.model.cache[v].compare_count(self.session['content']):
@@ -599,15 +602,13 @@ class NetworkController(object):
 	            if adj_nodes in self.model.cache:
 	    	        self.put_content(adj_nodes)
 
-	
-    """-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v"""
+    # popularity-based (cache: local node)(no. of threshold: 1)
     def check_local_p(self,v):
 	if v in self.model.cache:
 	    if self.model.cache[v].compare_count(self.session['content']):
 		self.put_content(v)
-    """-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^"""
    
-    """-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v"""
+    # popularity-based (cache: neighbour nodes)(no. of threshold: 2)
     def check_neighbours_threshold(self, v):		
 	if v in self.model.cache:
 	    if self.model.cache[v].compare_count(self.session['content']):
@@ -616,5 +617,5 @@ class NetworkController(object):
 		    if adj_nodes in self.model.cache:
 	    	        if self.model.cache[adj_nodes].pass_threshold_a(self.session['content']):
   			    self.put_content(adj_nodes)
-    """-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^"""
+
 
