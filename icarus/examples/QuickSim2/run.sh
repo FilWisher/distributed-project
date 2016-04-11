@@ -25,6 +25,9 @@ export PYTHONPATH=${ICARUS_DIR}:$PYTHONPATH
 echo "Run experiments"
 python ${ICARUS_DIR}/icarus.py --results ${RESULTS_FILE} ${CONFIG_FILE}
 
+#cleanup results file for visualisation
+python ${ICARUS_DIR}/scripts/event_cleanup.py ${RESULTS_FILE}
+
 # Plot results
 #echo "Plot results"
 #python ${CURR_DIR}/plotresults.py --results ${RESULTS_FILE} --output ${PLOTS_DIR} ${CONFIG_FILE} 

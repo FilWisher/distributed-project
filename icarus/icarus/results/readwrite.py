@@ -232,7 +232,7 @@ def read_results_json(path):
         The read result set
     """
     with open(path, 'rb') as json_file:
-        return jp.decode(json_file)
+        return jp.decode(json_file.read())
     
 @register_results_writer('JSON_TOPOLOGY')
 def write_results_json(results, path):
