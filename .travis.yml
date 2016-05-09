@@ -17,8 +17,8 @@ before_install:
   - cd icarus
 
 install:
-  - sudo pip install scipy
-  - sudo pip install matplotlib
+  - $PIP_INSTALL scipy
+  - $PIP_INSTALL matplotlib
   - $PIP_INSTALL networkx
   - $PIP_INSTALL fnss
 
