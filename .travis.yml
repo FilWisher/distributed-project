@@ -12,12 +12,12 @@ before_install:
   - sudo apt-get install -qq libatlas-dev libatlas-base-dev liblapack-dev gfortran clang ant doxygen
   - sudo apt-get update -qq
   - sudo $PIP_INSTALL pip
-  - cd icarus
-
-install:
   - sudo -H pip install scipy
   - sudo -H pip install numpy
   - sudo -H pip install matplotlib
+  - cd icarus
+
+install:
   - $PIP_INSTALL networkx
   - $PIP_INSTALL fnss
 
