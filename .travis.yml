@@ -11,6 +11,7 @@ env:
     - PIP_INSTALL="pip install --upgrade"
 
 before_install:
+  - cd icarus
   # For Ubuntu 12.04 VMs
   - sudo apt-get update -qq
   - sudo apt-get install -qq libatlas-dev libatlas-base-dev liblapack-dev gfortran clang ant doxygen
@@ -32,6 +33,7 @@ install:
   - conda install --yes python=$TRAVIS_PYTHON_VERSION atlas numpy scipy matplotlib nose dateutil pandas statsmodels
   - $PIP_INSTALL networkx
   - $PIP_INSTALL fnss
+
 
 script:
   - "nosetests"
