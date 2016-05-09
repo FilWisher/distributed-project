@@ -2,7 +2,7 @@ language: python
 
 # Python versions to be tested
 python:
-  - "2.7"
+  - "2.7_with_system_site_packages"
 
 env:
   global:
@@ -14,11 +14,10 @@ before_install:
   - sudo apt-get install libblas-dev
   - sudo apt-get install liblapack-dev
   - sudo apt-get install gfortran
-  - cd icarus
+  - sudo apt-get install -qq python-numpy python-scipy python-matplotlib
+  - python setup.py install
 
 install:
-  - $PIP_INSTALL scipy
-  - $PIP_INSTALL matplotlib
   - $PIP_INSTALL networkx 
   - $PIP_INSTALL fnss
 
