@@ -10,16 +10,16 @@ env:
 
 before_install:
   - sudo apt-get install -qq libatlas-dev libatlas-base-dev liblapack-dev gfortran clang ant doxygen
-  - sudo $PIP_INSTALL pip
   - sudo apt-get install libblas-dev
   - sudo apt-get install liblapack-dev
   - sudo apt-get install gfortran
-  - sudo apt-get install -qq python-numpy python-scipy python-matplotlib
-  - python setup.py install
-
+  
 install:
-  - $PIP_INSTALL networkx 
-  - $PIP_INSTALL fnss
+  - pip install scipy
+  - pip install mathplotlib
+  - pip install numpy
+  - pip install networkx 
+  - pip install fnss
 
 
 script:
