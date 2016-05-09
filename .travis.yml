@@ -9,7 +9,6 @@ env:
     - PIP_INSTALL="pip install --upgrade"
 
 before_install:
-  - sudo apt-get install -qq libatlas-dev libatlas-base-dev liblapack-dev gfortran clang ant doxygen
   - sudo apt-get install -qq python-numpy python-scipy
   - cd icarus
 
