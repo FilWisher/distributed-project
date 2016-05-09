@@ -19,7 +19,7 @@ before_install:
 install:
   - $PIP_INSTALL scipy
   - $PIP_INSTALL matplotlib
-  - $PIP_INSTALL networkx
+  - $PIP_INSTALL networkx 
   - $PIP_INSTALL fnss
 
 
