@@ -3,8 +3,10 @@ python: "2.7"
 install: 
 node_js: "5.3"
 script:
-    - ./visualization/npm run cover
-    - ./icarus/python test.py
+    - cd visualization
+    - npm run cover
+    - cd ../icarus/
+    - python test.py
 after_script: npm run report
 
 addons:
