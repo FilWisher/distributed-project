@@ -76,6 +76,7 @@ class NetworkView(object):
                              'NetworkModel')
         self.model = model
 
+
     def all_data_sources(self):
         """Return the dictionary of all content locations"""
         dic = self.model.content_source
@@ -124,7 +125,7 @@ class NetworkView(object):
             Origin node
         t : any hashable type
             Destination node
-        
+        POP_SELF_DYN'
         Returns
         -------
         shortest_path : list
@@ -251,6 +252,13 @@ class NetworkView(object):
         """
         if node in self.model.cache:
             return self.model.cache[node].has(content)
+    
+    def get_node_threshold(self, node):
+	return self.model.cache[node].threshold
+
+    def dump_node_poptable(self, node):
+	self.model.cache[node].dump_pop_table()
+
 
     def cache_dump(self, node):
         """Returns the dump of the content of a cache in a specific node
@@ -273,6 +281,9 @@ class NetworkView(object):
 
     def get_threshold(self):
         return self.model.cache[self.model.cache.keys()[0]].get_threshold()
+    
+    def get_threshold_v(self, v):
+	return self.model.cache[v].threshold
 
 class NetworkModel(object):
     """Models the internal state of the network.

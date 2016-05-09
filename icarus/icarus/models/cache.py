@@ -2360,7 +2360,8 @@ class Pop_neighbour_dyn(Cache):
 	number = 0 # for dynamic thershold
 	for key in self._counter:
 	    count, t, p_count = self._counter[key]
-	    number += 1 # make sure do not divide by zero in dynamic thresholds calculation
+	    if p_count > 0:
+	        number += 1 # make sure do not divide by zero in dynamic thresholds calculation
 	    s_sum += pow(p_count,1) # can just record total periodic count for faster performance but I recorded individual count for future use                  
 	    self._counter[key] = count-amount, t, 0 
 	    if count-amount <= 0: 	    
@@ -2484,7 +2485,8 @@ class Pop_self_dyn(Cache):
 	
     # for error checking    
     def dump_pop_table(self):
-        return self._counter
+	print self._counter         
+	 
     # for error checking
     def get_threshold(self):
         return self.threshold
@@ -2516,7 +2518,8 @@ class Pop_self_dyn(Cache):
 	number = 0 # for dynamic thershold
 	for key in self._counter:
 	    count, t, p_count = self._counter[key]
-	    number += 1 # make sure do not divide by zero in dynamic thresholds calculation
+	    if p_count >0:	    
+		number += 1 # make sure do not divide by zero in dynamic thresholds calculation
 	    s_sum += pow(p_count,1) # can just record total periodic count for faster performance but I recorded individual count for future use                  
 	    self._counter[key] = count-amount, t, 0 
 	    if count-amount <= 0: 	    
@@ -2524,6 +2527,7 @@ class Pop_self_dyn(Cache):
 	    if time-t > self.time_limit:
 		self.remove_count(key)
     # comment out below for static threshold
+	
 	if not number==0: 	
 	    mean = s_sum/number
 	    if self.First_time :	    
@@ -2541,7 +2545,8 @@ class Pop_self_dyn(Cache):
         if k in self._counter:
             freq, t, p_count = self._counter[k]
             self._counter[k] = freq + 1, time, p_count + 1
-        else:
+	    #print self._counter        
+	else:
             self._counter[k] = 1, time, 1 
    
     # update thresholds (This is called in decrement to make sure both thresholds get updated together)
@@ -2672,7 +2677,8 @@ class Pop_neighbour_t_dyn(Cache):
 	number = 0 # for dynamic thershold
 	for key in self._counter:
 	    count, t, p_count = self._counter[key]
-	    number += 1 # make sure do not divide by zero in dynamic thresholds calculation
+	    if p_count >0:	    
+		number += 1 # make sure do not divide by zero in dynamic thresholds calculation
 	    s_sum += pow(p_count,1) # can just record total periodic count for faster performance but I recorded individual count for future use                  
 	    self._counter[key] = count-amount, t, 0 
 	    if count-amount <= 0: 	    

@@ -1085,7 +1085,7 @@ class Pop_self_dyn(Strategy):
     @inheritdoc(Strategy)
     def process_event(self, time, receiver, content, log):
 	# decrement popularity score and update internal clock 
-	if time - self.clock >= 120:	
+	if time - self.clock >= 120:
             dec = (time - self.clock)*self.dec_per_sec
             self.controller.decrement(dec, time)
             self.clock = time
@@ -1102,6 +1102,8 @@ class Pop_self_dyn(Strategy):
             self.controller.forward_request_hop(u, v)
             if self.view.has_cache(v):
 		self.controller.cache_recent_update(v,time)
+		# TODO:
+		#self.view.dump_node_poptable(5)
                 if self.controller.get_content(v):
                     serving_node = v
                     break        
