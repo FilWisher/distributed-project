@@ -11,12 +11,21 @@ env:
 before_install:
   - sudo apt-get install -qq libatlas-dev libatlas-base-dev liblapack-dev gfortran clang ant doxygen
   - sudo $PIP_INSTALL pip
-  - sudo -H $PIP_INSTALL scipy
-  - sudo -H $PIP_INSTALL numpy
-  - sudo -H $PIP_INSTALL matplotlib
+  - wget http://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh
+  - chmod +x miniconda.sh
+  - ./miniconda.sh -b
+  - export PATH=/home/travis/miniconda/bin:$PATH
+  - conda update --yes conda
+  # The next couple lines fix a crash with multiprocessing on Travis and are not specific to using Miniconda
+  - sudo rm -rf /dev/shm
+  - sudo ln -s /run/shm /dev/shm
   - cd icarus
 
 install:
+  - conda install --yes python=$TRAVIS_PYTHON_VERSION atlas numpy scipy matplotlib nose dateutil pandas statsmodels
+  # Coverage packages are on my binstar channel
+  - conda install --yes -c dan_blanchard python-coveralls nose-cov
+  - python setup.py install
   - $PIP_INSTALL networkx
   - $PIP_INSTALL fnss
 
