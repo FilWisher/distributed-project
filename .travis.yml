@@ -2,7 +2,7 @@ language: python
 
 # Python versions to be tested
 python:
-  - "2.7_with_system_site_packages"
+  - "2.7"
 
 env:
   global:
