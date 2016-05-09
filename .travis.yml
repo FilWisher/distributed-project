@@ -1,6 +1,6 @@
 language: node_js
 node_js: "5.3"
-script: npm run cover
+script: npm run cover && python /icarus/test.py
 after_script: npm run report
 before_install:
   - cd visualization
