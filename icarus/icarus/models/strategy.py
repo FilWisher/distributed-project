@@ -947,7 +947,6 @@ class Pop_self_stat(Strategy):
             dec = (time - self.clock)*self.dec_per_sec
             self.controller.decrement(dec, time)
             self.clock = time
-
 	
 	# get all required data
         source = self.view.content_source(content)
