@@ -13,13 +13,13 @@ before_install:
   # For Ubuntu 12.04 VMs
   - sudo apt-get update -qq
   - sudo apt-get install -qq libatlas-dev libatlas-base-dev liblapack-dev gfortran clang ant doxygen
+  - sudo apt-get install python-numpy python-scipy python-matplotlib ipython ipython-notebook python-pandas python-sympy python-nose
   - sudo $PIP_INSTALL pip
   # For Ubuntu 14.04 VMs (when it'll be avaialable)
   # - sudo apt-get -qq install python-numpy python-scipy python-matplotlib python-networkx
   # - $PIP_INSTALL fnss
 
 install:
-  - $PIP_INSTALL numpy 
   - $PIP_INSTALL networkx
   - $PIP_INSTALL fnss
 
