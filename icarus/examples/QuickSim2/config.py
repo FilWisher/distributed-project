@@ -15,12 +15,12 @@ N_REPLICATIONS = 1
 
 # List of metrics to be measured in the experiments
 # The implementation of data collectors are located in ./icaurs/execution/collectors.py
-DATA_COLLECTORS = ['EVENT_TIMELINE']
+DATA_COLLECTORS = ['EVENT_TIMELINE', 'TOPOLOGY']
 ALPHA = [0.6]
 # Total size of network cache as a fraction of content population
 NETWORK_CACHE = [0.3]
 # Number of content objects
-N_CONTENTS = 1000
+N_CONTENTS = 100
 # Number of requests per second (over the whole network)
 NETWORK_REQUEST_RATE = 12.0
 # Number of content requests generated to prepopulate the caches
@@ -40,7 +40,7 @@ STRATEGIES = [
      'LCE',             # Leave Copy Everywhere
              # No caching, shorest-path routing
              ]
-CACHE_POLICY = 'POPULARITY_CACHING'
+CACHE_POLICY = 'POPULARITY_TABLE'
 
 # Queue of experiments
 EXPERIMENT_QUEUE = deque()

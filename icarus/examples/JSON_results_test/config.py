@@ -20,7 +20,7 @@ ALPHA = [0.6]
 # Total size of network cache as a fraction of content population
 NETWORK_CACHE = [0.004]
 # Number of content objects
-N_CONTENTS = 3*10**2
+N_CONTENTS = 3*10
 # Number of requests per second (over the whole network)
 NETWORK_REQUEST_RATE = 12.0
 # Number of content requests generated to prepopulate the caches

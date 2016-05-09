@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<head>
+    <title>Network Topology</title>
+</head>
+<style>
+
+  body {
+    top:0;
+    bottom:0;
+    left:0;
+    right:0;
+    position:fixed;
+  }
+
+  .node {
+    stroke: black;
+    stroke-width: 2px;
+  }
+
+  .link {
+    stroke: #ccc;
+    stroke-opacity: 1.0;
+  }
+
+  .legend rect {
+    fill:white;
+    stroke:white;
+  }
+
+</style>
+<body>
+
+<div id="option">
+    <input name="updateButton" 
+           type="button" 
+           value="Update" 
+           onclick="update_colour()" />
+</div>
+
+<script type="text/javascript" src="https://d3js.org/d3.v3.min.js"></script>
+<script src="../d3 examples/d3.legend.js"></script>
+<script>
+
+    var STD_NODE_SIZE = 4;
+
+    var width = 1000,
+        height = 800;
+
+    var color = d3.scale.category10();
+
+    var force = d3.layout.force()
+        .charge(-250)
+        .linkDistance(30)
+        .size([width, height]);
+
+    var canvas = d3.select("body").append("svg")
+        .attr("width", width)
+        .attr("height", height)
+        .style("background", "#E0E0E0");
+
+    d3.json("../input data/formatted_topology.json", function(error, graph) {  
+      if (error) throw error;
+
+      force.nodes(graph.nodes)
+          .links(graph.edges)
+          .start();
+
+      var link = canvas.selectAll(".link")
+          .data(graph.edges)
+          .enter()
+          .append("line")
+          .attr("class", "link")
+          .style("stroke-width", 2)
+          .style("stroke", "black");
+
+      var node = canvas.selectAll(".node")
+          .data(graph.nodes)
+          .enter()
+          .append("circle")
+          .attr("class", "node")
+          .attr("data-legend",function(d) { return d.type;})
+          //.attr("r", 5)
+          .attr("r", function(d){
+              var node_size;
+              if (d.type == "router") { 
+                if (d.cache_size == 0) {
+                  node_size = STD_NODE_SIZE
+                } else {
+                    node_size = d.cache_size/1.5;
+                }
+              } else if (d.type == "source") { node_size = STD_NODE_SIZE;
+              } else if (d.type == "receiver") {node_size = STD_NODE_SIZE;}
+              return node_size;
+          })
+          .style("fill", function(d) { return color(d.type); })
+          .style("stroke-width", 1)
+          .style("stroke", "black")
+          .call(force.drag)
+          // hover mouse over node modifies node radius
+          .on('mouseover', function(d,i) {
+            d3.select(this).transition()
+              .ease('cubic-out')
+              .duration('200')
+              .attr('r', 20)
+          })
+          // is it possible to reset to original value
+          .on('mouseout', function(d,i) {
+            d3.select(this).transition()
+              .ease('cubic-out')
+              .duration('200')
+          .attr("r", function(d){
+              var node_size;
+              if (d.type == "router") { 
+                if (d.cache_size == 0) {
+                  node_size = STD_NODE_SIZE
+                } else {
+                    node_size = d.cache_size/1.5;
+                }
+              } else if (d.type == "source") { node_size = STD_NODE_SIZE;
+              } else if (d.type == "receiver") {node_size = STD_NODE_SIZE;}
+              return node_size;
+          })
+          });
+
+      node.append("title")
+          .text(function(d) { return d.name; })
+
+      force.on("tick", function() {
+        link.attr("x1", function(d) { return d.source.x; })
+            .attr("y1", function(d) { return d.source.y; })
+            .attr("x2", function(d) { return d.target.x; })
+            .attr("y2", function(d) { return d.target.y; });
+        link.attr("x1", function(d) { return d.source.x; })
+            .attr("y1", function(d) { return d.source.y; })
+            .attr("x2", function(d) { return d.target.x; })
+            .attr("y2", function(d) { return d.target.y; });
+
+        node.attr("cx", function(d) { return d.x; })
+            .attr("cy", function(d) { return d.y; });     
+
+      });
+
+
+    });
+
+    function update_colour() {
+        canvas.selectAll(".node")
+            .transition()
+
+            .style("fill", function(d){
+              var node_colour;
+              if (d.type == "router") { 
+                  node_colour = "grey"
+              } else {
+                node_colour = "yellow"
+              }
+              return node_colour;
+            })
+            .duration(1000)
+            .delay(100)
+    }
+
+    // Add title    
+    canvas.append("svg:text")
+          .attr("class", "title")
+          .attr("x", 40)
+          .attr("y", 40)
+          .attr("font-size", "28px")
+          .style("font-family", "Nunito")
+          .style("fill", "#707070")
+          .style("font-weight", 300)
+          .text("Icarus Network Simulation: Topology");
+
+    legend = canvas.append("g")
+                    .attr("class","legend")
+                    .attr("transform","translate(50,80)")
+                    .attr("font-size", "16px")
+                    .style("font-family", "Nunito")
+                    .style("fill", "#707070")
+                    .style("font-weight", 300)
+                    .style("text-transform", "capitalize")
+                    .call(d3.legend)      
+
+    setTimeout(function() { 
+      legend.attr("data-style-padding",10)
+            .call(d3.legend)
+      },1000)
+</script>
+</body>
