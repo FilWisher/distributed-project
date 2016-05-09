@@ -1,14 +1,9 @@
-language: node_js 
+language: python 
 python: "2.7"
-install: 
-node_js: "5.3"
-script:
-    - cd visualization
-    - npm run cover
-    - cd ../icarus/
-    - python test.py
-after_script: npm run report
-
+install: true
+script: 
+    python test.py
+before_script: cd icarus
 addons:
   code_climate:
     repo_token: a7eedabcadb0a6d386326ec94f9ea7709d33c38f075b822739323a8e6d9150e6
