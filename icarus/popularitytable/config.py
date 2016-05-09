@@ -1,5 +1,7 @@
 """This module contains all configuration information used to run simulations
 """
+from os import path
+from numpy import arange
 from multiprocessing import cpu_count
 from collections import deque
 import copy
@@ -10,7 +12,7 @@ from icarus.util import Tree
 # Level of logging output
 # Available options: DEBUG, INFO, WARNING, ERROR, CRITICAL
 LOG_LEVEL = 'INFO'
-
+LOG_EVERYTHING = False
 # If True, executes simulations in parallel using multiple processes
 # to take advantage of multicore CPUs
 PARALLEL_EXECUTION = True
@@ -98,7 +100,14 @@ STRATEGIES = [
      'POP_NEIGHBOUR_T_DYN',        
 	     ]
 
-
+POP = [
+     'POP_SELF_STAT',# request neighbours node to cache without acceptance policy
+     'POP_NEIGHBOUR_STAT', # cache at itself 
+     'POP_NEIGHBOUR_T_STAT', #request neighbours node to cache with acceptance policy
+     'POP_SELF_DYN',
+     'POP_NEIGHBOUR_DYN',
+     'POP_NEIGHBOUR_T_DYN',  
+	     ]
 # Queue of experiments
 EXPERIMENT_QUEUE = deque()
 default = Tree()

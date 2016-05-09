@@ -3,3 +3,6 @@
 from .readwrite import *
 from .plot import *
 from .visualize import *
+from .zipf_optimal import*
+from .logging import*
+
