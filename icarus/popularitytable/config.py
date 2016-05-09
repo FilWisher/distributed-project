@@ -1,12 +1,10 @@
 """This module contains all configuration information used to run simulations
 """
-from os import path
-from numpy import arange
+#from icarus.results import optimal as optimal
 from multiprocessing import cpu_count
 from collections import deque
 import copy
 from icarus.util import Tree
-
 # GENERAL SETTINGS
 
 # Level of logging output
@@ -32,7 +30,7 @@ RESULTS_FORMAT = 'PICKLE'
 
 # Number of times each experiment is replicated
 # This is necessary for extracting confidence interval of selected metrics
-N_REPLICATIONS = 1
+N_REPLICATIONS = 2
 
 # List of metrics to be measured in the experiments
 # The implementation of data collectors are located in ./icaurs/execution/collectors.py
@@ -53,21 +51,21 @@ DATA_COLLECTORS = ['CACHE_HIT_RATIO', 'LATENCY', 'LINK_LOAD', 'PATH_STRETCH']
 ALPHA = [0.65, 0.8]
 
 # Total size of network cache as a fraction of content population
-NETWORK_CACHE = [0.05, 0.2]
+NETWORK_CACHE = [0.2]
 
 # Number of content objects
 N_CONTENTS = 1000
 
 # Number of requests per second (over the whole network)
-NETWORK_REQUEST_RATE = 500
+NETWORK_REQUEST_RATE = 100
 
 # Number of content requests generated to prepopulate the caches
 # These requests are not logged
-N_WARMUP_REQUESTS = N_CONTENTS/2
+N_WARMUP_REQUESTS = N_CONTENTS
 
 # Number of content requests generated after the warmup and logged
 # to generate results. 
-N_MEASURED_REQUESTS = 10000
+N_MEASURED_REQUESTS = 50000
 
 # List of all implemented topologies
 # Topology implementations are located in ./icarus/scenarios/topology.py
@@ -134,3 +132,5 @@ for alpha in ALPHA:
                 experiment['desc'] = "Strategy: %s, Alpha: %s, Network cache: %s, Topology: %s" \
                              % (strategy, str(alpha), str(network_cache), str(topology))
             EXPERIMENT_QUEUE.append(experiment)
+
+

@@ -29,7 +29,7 @@ __modules_to_register = [
      'icarus.scenarios.cacheplacement',
      'icarus.scenarios.workload',
      'icarus.results.zipf_optimal',
-     'icarus.results.logging'
+     #'icarus.results.optimal'
                          ]
 
 for m in __modules_to_register:

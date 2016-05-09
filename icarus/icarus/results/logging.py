@@ -22,9 +22,10 @@ PACKET_TYPE_DATA = 'D'
 
 # If True, it will create CACHE, LINK and STRETCH log files with one line per event
 # If False, it will only write the summary files (this option saves space on disk dramatically)
-write_log = True
+#write_log = config.LOG_EVERYTHING
+#parallel_exec = config.PARALLEL_EXEC
+write_log = False
 parallel_exec = True
-
 class BaseLogger(object):
     
     def __init__(self, file_name, buf_size=5000, write_log=write_log):

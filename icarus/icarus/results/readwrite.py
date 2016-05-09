@@ -202,6 +202,8 @@ def read_results_pickle(path):
     with open(path, 'rb') as pickle_file:
         return pickle.load(pickle_file)
 
+    
+
 @register_results_writer('JSON')
 def write_results_json(results, path):
     """Write a resultset to a JSON file
