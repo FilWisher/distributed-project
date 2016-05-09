@@ -1,12 +1,26 @@
-language: node_js
-node_js: "5.3"
-script: npm run cover
-after_script: npm run report
+language: python
+
+# Python versions to be tested
+python:
+  - "2.7"
+
+env:
+  global:
+    - PIP_INSTALL="pip install --upgrade"
+
 before_install:
-  - cd visualization
-addons:
-  code_climate:
-    repo_token: a7eedabcadb0a6d386326ec94f9ea7709d33c38f075b822739323a8e6d9150e6
-branches:
-  only:
-    - master
+  - sudo apt-get install -qq python-numpy python-scipy
+  - cd icarus
+
+
+virtualenv:
+  system_site_packages: true
+
+install:
+  - pip install matplotlib
+  - pip install networkx 
+  - pip install fnss
+
+
+script:
+  - "nosetests"
