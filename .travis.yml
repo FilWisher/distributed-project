@@ -10,11 +10,10 @@ env:
 
 before_install:
   - sudo apt-get install -qq libatlas-dev libatlas-base-dev liblapack-dev gfortran clang ant doxygen
-  - sudo apt-get update -qq
   - sudo $PIP_INSTALL pip
-  - sudo -H pip install scipy
-  - sudo -H pip install numpy
-  - sudo -H pip install matplotlib
+  - sudo -H $PIP_INSTALL scipy
+  - sudo -H $PIP_INSTALL numpy
+  - sudo -H $PIP_INSTALL matplotlib
   - cd icarus
 
 install:
