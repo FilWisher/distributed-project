@@ -10,16 +10,14 @@ env:
 
 before_install:
   - sudo apt-get install -qq libatlas-dev libatlas-base-dev liblapack-dev gfortran clang ant doxygen
-  - sudo apt-get install -qq python-matplotlib 
   - sudo apt-get update -qq
   - sudo $PIP_INSTALL pip
-  - sudo apt-get -qq install python-numpy python-scipy python-matplotlib python-networkx
   - $PIP_INSTALL fnss
   - cd icarus
 
 install:
-  - sudo pip install scipy
-  - sudo pip install numpy
+  - sudo pip -H install scipy
+  - sudo pip -H install numpy
   - $PIP_INSTALL networkx
   - $PIP_INSTALL fnss
 
