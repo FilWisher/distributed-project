@@ -17,7 +17,7 @@ virtualenv:
   system_site_packages: true
 
 install:
-  - pip install mathplotlib
+  - pip install matplotlib
   - pip install networkx 
   - pip install fnss
 
