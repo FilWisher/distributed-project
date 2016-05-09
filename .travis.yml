@@ -11,9 +11,9 @@ env:
 before_install:
   - cd icarus
   # For Ubuntu 12.04 VMs
-  - sudo apt-get update -qq
   - sudo apt-get install -qq libatlas-dev libatlas-base-dev liblapack-dev gfortran clang ant doxygen
-  - sudo apt-get install python-numpy python-scipy python-matplotlib
+  - sudo apt-get install -qq python-numpy python-scipy python-matplotlib 
+  - sudo apt-get update -qq
   - sudo $PIP_INSTALL pip
   # For Ubuntu 14.04 VMs (when it'll be avaialable)
   # - sudo apt-get -qq install python-numpy python-scipy python-matplotlib python-networkx
