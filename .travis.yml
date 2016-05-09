@@ -1,4 +1,6 @@
-language: node_js
+language: node_js && python
+python: "2.7"
+install: 
 node_js: "5.3"
 script: npm run cover && python /icarus/test.py
 after_script: npm run report
@@ -10,3 +12,4 @@ addons:
 branches:
   only:
     - master
+    - six_tests
