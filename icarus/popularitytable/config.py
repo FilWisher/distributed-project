@@ -48,32 +48,32 @@ DATA_COLLECTORS = ['CACHE_HIT_RATIO', 'LATENCY', 'LINK_LOAD', 'PATH_STRETCH']
 # This would give problems while trying to plot the results because if for
 # example I wanted to filter experiment with alpha=0.8, experiments with
 # alpha = 0.799999999999 would not be recognized 
-ALPHA = [0.8]
+ALPHA = [0.65, 0.8]
 
 # Total size of network cache as a fraction of content population
-NETWORK_CACHE = [0.001, 0.004]
+NETWORK_CACHE = [0.05, 0.2]
 
 # Number of content objects
-N_CONTENTS = 10000
+N_CONTENTS = 1000
 
 # Number of requests per second (over the whole network)
-NETWORK_REQUEST_RATE = 1
+NETWORK_REQUEST_RATE = 500
 
 # Number of content requests generated to prepopulate the caches
 # These requests are not logged
-N_WARMUP_REQUESTS = N_CONTENTS
+N_WARMUP_REQUESTS = N_CONTENTS/2
 
 # Number of content requests generated after the warmup and logged
 # to generate results. 
-N_MEASURED_REQUESTS = 40000
+N_MEASURED_REQUESTS = 10000
 
 # List of all implemented topologies
 # Topology implementations are located in ./icarus/scenarios/topology.py
 TOPOLOGIES =  [
         'GEANT',
         'WIDE',
-        'GARR',
-        'TISCALI',
+        #'GARR',
+        #'TISCALI',
               ]
 
 # List of caching and routing strategies
@@ -90,16 +90,14 @@ STRATEGIES = [
      #'LCD',              # Leave Copy Down
      #'RAND_CHOICE',     # Random choice: cache in one random cache on path
      #'RAND_BERNOULLI',  # Random Bernoulli: cache randomly in caches on path
-     'POPULARITY_TABLE',# request neighbours node to cache without acceptance policy
-     'LOCAL_POPULARITY', # cache at itself 
-     'POPULARITY_TABLE_ACCEPTANCE', #request neighbours node to cache with acceptance policy
-             ]
+     'POP_SELF_STAT',# request neighbours node to cache without acceptance policy
+     'POP_NEIGHBOUR_STAT', # cache at itself 
+     'POP_NEIGHBOUR_T_STAT', #request neighbours node to cache with acceptance policy
+     'POP_SELF_DYN',
+     'POP_NEIGHBOUR_DYN',
+     'POP_NEIGHBOUR_T_DYN',        
+	     ]
 
-POP = [
-     'POPULARITY_TABLE',# request neighbours node to cache without acceptance policy
-     'LOCAL_POPULARITY', # cache at itself 
-     'POPULARITY_TABLE_ACCEPTANCE', #request neighbours node to cache with acceptance policy
-             ]
 
 # Queue of experiments
 EXPERIMENT_QUEUE = deque()
@@ -118,15 +116,12 @@ for alpha in ALPHA:
     for strategy in STRATEGIES:
         for topology in TOPOLOGIES:
             for network_cache in NETWORK_CACHE:
-		if strategy in POP:
-		    default['cache_policy']['name'] = 'POPULARITY_TABLE'
-		else:
-		    default['cache_policy']['name'] = 'LRU'
+		default['cache_policy']['name'] = strategy 		
                 experiment = copy.deepcopy(default)
                 experiment['workload']['alpha'] = alpha
                 experiment['strategy']['name'] = strategy
                 experiment['topology']['name'] = topology
                 experiment['cache_placement']['network_cache'] = network_cache
-                experiment['desc'] = "Alpha: %s, strategy: %s, topology: %s, network cache: %s" \
-                                     % (str(alpha), strategy, topology, str(network_cache))
-                EXPERIMENT_QUEUE.append(experiment)
+                experiment['desc'] = "Strategy: %s, Alpha: %s, Network cache: %s, Topology: %s" \
+                             % (strategy, str(alpha), str(network_cache), str(topology))
+            EXPERIMENT_QUEUE.append(experiment)
