@@ -19,7 +19,6 @@ before_install:
 install:
   - sudo pip install scipy
   - sudo pip install matplotlib
-  - python setup.py install
   - $PIP_INSTALL networkx
   - $PIP_INSTALL fnss
 
