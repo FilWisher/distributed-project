@@ -531,10 +531,13 @@ class PathStretchCollector(DataCollector):
             
     @inheritdoc(DataCollector)
     def results(self):
+        #results = Tree({'MEAN': self.mean_stretch/self.sess_count,
+                        #'MEAN_REQUEST': self.mean_req_stretch/self.sess_count,
+                        #'MEAN_CONTENT': self.mean_cont_stretch/self.sess_count})
         results = Tree({'MEAN': self.mean_stretch/self.sess_count,
                         'MEAN_REQUEST': self.mean_req_stretch/self.sess_count,
-                        'MEAN_CONTENT': self.mean_cont_stretch/self.sess_count})
-        if self.cdf:
+                        'MEAN_CONTENT': self.mean_cont_stretch/self.sess_count})        
+	if self.cdf:
             results['CDF'] = cdf(self.stretch_data)
             results['CDF_REQUEST'] = cdf(self.req_stretch_data)
             results['CDF_CONTENT'] = cdf(self.cont_stretch_data)

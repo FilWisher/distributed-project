@@ -22,8 +22,8 @@ PLOTS_DIR=${CURR_DIR}/plots
 export PYTHONPATH=${ICARUS_DIR}:$PYTHONPATH
 
 # Run experiments
-echo "Run experiments"
-python ${ICARUS_DIR}/icarus.py --results ${RESULTS_FILE} ${CONFIG_FILE}
+#echo "Run experiments"
+#python ${ICARUS_DIR}/icarus.py --results ${RESULTS_FILE} ${CONFIG_FILE}
 
 # Plot results
 echo "Plot results"
