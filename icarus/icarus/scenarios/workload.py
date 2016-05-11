@@ -26,11 +26,12 @@ from icarus.tools import TruncatedZipfDist
 from icarus.registry import register_workload
 
 __all__ = [
-        'StationaryWorkload',
-        'GlobetraffWorkload',
-        'TraceDrivenWorkload',
-        'YCSBWorkload'
-           ]
+    'StationaryWorkload',
+    'GlobetraffWorkload',
+    'TraceDrivenWorkload',
+    'YCSBWorkload',
+    'PreDefinedWorkload'
+]
 
 
 @register_workload('STATIONARY')
@@ -278,6 +279,77 @@ class TraceDrivenWorkload(object):
                     receiver = random.choice(self.receivers)
                 else:
                     receiver = self.receivers[self.receiver_dist.rv()-1]
+                log = (req_counter >= self.n_warmup)
+                event = {'receiver': receiver, 'content': content, 'log': log}
+                yield (t_event, event)
+                req_counter += 1
+                if(req_counter >= self.n_warmup + self.n_measured):
+                    raise StopIteration()
+            raise ValueError("Trace did not contain enough requests")
+
+
+@register_workload('PREDEFINED')
+class PreDefinedWorkload(object):
+    """Parse requests from a generic request trace.
+    
+    This workload requires a text file of tuples of 
+    (requester, data)
+        
+    Parameters
+    ----------
+    topology : fnss.Topology
+        The topology to which the workload refers
+    reqs_file : str
+        The path to the requests file
+    n_contents : int
+        The number of content object (i.e. the number of lines of contents_file)
+    n_warmup : int
+        The number of warmup requests (i.e. requests executed to fill cache but
+        not logged)
+    n_measured : int
+        The number of logged requests after the warmup
+    rate : float, optional
+        The network-wide mean rate of requests per second
+        
+    Returns
+    -------
+    events : iterator
+        Iterator of events. Each event is a 2-tuple where the first element is
+        the timestamp at which the event occurs and the second element is a
+        dictionary of event attributes.
+    """
+    
+    def __init__(self, topology, reqs_file, n_contents,
+                 n_warmup, n_measured, rate=1.0, **kwargs):
+        """Constructor"""
+     
+        # Set high buffering to avoid one-line reads
+        self.buffering = 64*1024*1024
+        self.n_contents = n_contents
+        self.contents = range(1,n_contents)
+        self.n_warmup = n_warmup
+        self.n_measured = n_measured
+        self.reqs_file = reqs_file
+        self.rate = rate
+        self.receivers = [v for v in topology.nodes_iter() 
+                          if topology.node[v]['stack'][0] == 'receiver']
+
+    def __iter__(self):
+        req_counter = 0
+        t_event = 0.0
+        with open(self.reqs_file, 'r', buffering=self.buffering) as f:
+            #raise ValueError(f.readlines())
+            for l in f.readlines():
+                l = eval(l)
+                t_event += (random.expovariate(self.rate))
+#                raise ValueError(self.receivers)
+                
+                if l[0] in self.receivers and l[1] <= self.n_contents:
+                    receiver = l[0]
+                    content = l[1]
+                else:
+                    raise ValueError("Trace contains contents or receivers not in network")
+                
                 log = (req_counter >= self.n_warmup)
                 event = {'receiver': receiver, 'content': content, 'log': log}
                 yield (t_event, event)

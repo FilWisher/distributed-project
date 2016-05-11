@@ -20,12 +20,12 @@ ALPHA = [0.6]
 # Total size of network cache as a fraction of content population
 NETWORK_CACHE = [0.3]
 # Number of content objects
-N_CONTENTS = 100
+N_CONTENTS = 101
 # Number of requests per second (over the whole network)
 NETWORK_REQUEST_RATE = 12.0
 # Number of content requests generated to prepopulate the caches
 # These requests are not logged
-N_WARMUP_REQUESTS = 100
+N_WARMUP_REQUESTS = 0
 # Number of content requests generated after the warmup and logged
 # to generate results. 
 N_MEASURED_REQUESTS = 400
@@ -42,10 +42,13 @@ STRATEGIES = [
     'POP_NEIGHBOUR_STAT', 'POP_SELF_STAT','POP_NEIGHBOUR_T_STAT',
     'POP_NEIGHBOUR_DYN', 'POP_SELF_DYN', 'POP_NEIGHBOUR_T_DYN']
 
+REQS_FILE = 'requests.txt'
+
 # Queue of experiments
 EXPERIMENT_QUEUE = deque()
 default = Tree()
-default['workload'] = {'name':       'STATIONARY',
+default['workload'] = {'name':       'PREDEFINED',
+                       'reqs_file': REQS_FILE,
                        'n_contents': N_CONTENTS,
                        'n_warmup':   N_WARMUP_REQUESTS,
                        'n_measured': N_MEASURED_REQUESTS,

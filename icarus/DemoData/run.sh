@@ -25,3 +25,6 @@ python ${ICARUS_DIR}/icarus.py --results ${RESULTS_FILE} ${CONFIG_FILE}
 #cleanup results file for visualisation
 python ${ICARUS_DIR}/scripts/event_cleanup.py ${RESULTS_FILE}
 
+python ${CURR_DIR}/streamToRequestFile.py ${RESULTS_FILE}
+
+

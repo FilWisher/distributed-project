@@ -1,7 +1,10 @@
 #!/usr/bin/env python
 """Run unit tests
 """
-from os import path, getcwd
+from os import path, getcwd, environ
+
+environ['NOSE_COVER_TESTS'] = '1'
+
 
 __all__ = ['run']
 
