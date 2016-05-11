@@ -12,7 +12,7 @@ from icarus.util import Tree
 # Level of logging output
 # Available options: DEBUG, INFO, WARNING, ERROR, CRITICAL
 LOG_LEVEL = 'INFO'
-LOG_EVERYTHING = False
+
 # If True, executes simulations in parallel using multiple processes
 # to take advantage of multicore CPUs
 PARALLEL_EXECUTION = True
@@ -33,7 +33,6 @@ RESULTS_FORMAT = 'PICKLE'
 # Number of times each experiment is replicated
 # This is necessary for extracting confidence interval of selected metrics
 N_REPLICATIONS = 1
-
 # List of metrics to be measured in the experiments
 # The implementation of data collectors are located in ./icaurs/execution/collectors.py
 DATA_COLLECTORS = ['CACHE_HIT_RATIO', 'LATENCY', 'LINK_LOAD', 'PATH_STRETCH']
@@ -50,10 +49,10 @@ DATA_COLLECTORS = ['CACHE_HIT_RATIO', 'LATENCY', 'LINK_LOAD', 'PATH_STRETCH']
 # This would give problems while trying to plot the results because if for
 # example I wanted to filter experiment with alpha=0.8, experiments with
 # alpha = 0.799999999999 would not be recognized 
-ALPHA = [0.65, 0.8]
+ALPHA = [0.3, 0.45, 0.6, 0.75]
 
 # Total size of network cache as a fraction of content population
-NETWORK_CACHE = [0.05, 0.2]
+NETWORK_CACHE = [0.01, 0.08, 0.1, 0.2]
 
 # Number of content objects
 N_CONTENTS = 1000
@@ -63,18 +62,18 @@ NETWORK_REQUEST_RATE = 500
 
 # Number of content requests generated to prepopulate the caches
 # These requests are not logged
-N_WARMUP_REQUESTS = N_CONTENTS/2
+N_WARMUP_REQUESTS = N_CONTENTS
 
 # Number of content requests generated after the warmup and logged
 # to generate results. 
-N_MEASURED_REQUESTS = 10000
+N_MEASURED_REQUESTS = 100000
 
 # List of all implemented topologies
 # Topology implementations are located in ./icarus/scenarios/topology.py
 TOPOLOGIES =  [
         'GEANT',
         'WIDE',
-        #'GARR',
+        'GARR',
         #'TISCALI',
               ]
 
@@ -97,17 +96,17 @@ STRATEGIES = [
      'POP_NEIGHBOUR_T_STAT', #request neighbours node to cache with acceptance policy
      'POP_SELF_DYN',
      'POP_NEIGHBOUR_DYN',
-     'POP_NEIGHBOUR_T_DYN',        
+     'POP_NEIGHBOUR_T_DYN'        
 	     ]
-
-POP = [
+POP =[
      'POP_SELF_STAT',# request neighbours node to cache without acceptance policy
      'POP_NEIGHBOUR_STAT', # cache at itself 
      'POP_NEIGHBOUR_T_STAT', #request neighbours node to cache with acceptance policy
      'POP_SELF_DYN',
      'POP_NEIGHBOUR_DYN',
-     'POP_NEIGHBOUR_T_DYN',  
+     'POP_NEIGHBOUR_T_DYN' 
 	     ]
+
 # Queue of experiments
 EXPERIMENT_QUEUE = deque()
 default = Tree()
@@ -121,11 +120,13 @@ default['cache_placement']['name'] = 'UNIFORM'
 default['content_placement']['name'] = 'UNIFORM'
 
 # Create experiments multiplexing all desired parameters
-for alpha in ALPHA:
-    for strategy in STRATEGIES:
-        for topology in TOPOLOGIES:
-            for network_cache in NETWORK_CACHE:
-		default['cache_policy']['name'] = strategy 		
+for topology in TOPOLOGIES:
+    for alpha in ALPHA:
+        for network_cache in NETWORK_CACHE:
+    	    for strategy in STRATEGIES:	
+		default['cache_policy']['name'] = strategy
+		if strategy not in POP:
+		    default['cache_polocy']['name'] = 'LRU' 		
                 experiment = copy.deepcopy(default)
                 experiment['workload']['alpha'] = alpha
                 experiment['strategy']['name'] = strategy
@@ -133,4 +134,4 @@ for alpha in ALPHA:
                 experiment['cache_placement']['network_cache'] = network_cache
                 experiment['desc'] = "Strategy: %s, Alpha: %s, Network cache: %s, Topology: %s" \
                              % (strategy, str(alpha), str(network_cache), str(topology))
-            EXPERIMENT_QUEUE.append(experiment)
+                EXPERIMENT_QUEUE.append(experiment)
