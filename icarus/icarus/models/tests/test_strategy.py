@@ -12,6 +12,31 @@ import fnss
 import icarus.models as strategy
 from icarus.execution import NetworkModel, NetworkView, NetworkController, TestCollector
 
+def t_stat_topology():   #making one neighbour cache but not the other depending on threshhold
+    topology = fnss.Topology()
+    topology.add_path([1, 2, 3, 4, 5, 6])
+    topology.add_edge(2, 7)
+    topology.add_edge(3, 8)
+    topology.add_edge(8, 9)
+    topology.add_edge(8, 10)
+    receivers = (1, 9)
+    source = 6
+    caches = (2, 8, 7, 10, 3, 4 , 5)
+
+	# 1-2-3-4-5-6
+	#   | |
+	#   7 8-9
+	#     |
+	#     10
+    contents = caches
+    fnss.add_stack(topology, source, 'source', {'contents': contents})
+    for v in caches:
+        fnss.add_stack(topology, v, 'router', {'cache_size': 1})
+    for v in receivers:
+        fnss.add_stack(topology, v, 'receiver', {})
+    return topology
+
+
 def star_topology():  #havent used this one yet
     topology = fnss.star_topology(6)
     source = 4
@@ -26,7 +51,7 @@ def star_topology():  #havent used this one yet
     return topology
 
 def lisa_topology():
-    topology = fnss.Topology()
+    topology = fnss.topology()
     topology.add_path([0, 2, 4, 6, 8, 7,  5, 3, 1])
     topology.add_edge(2, 3)
     topology.add_edge(0, 1)
@@ -863,8 +888,459 @@ class TestNrr(unittest.TestCase):
         self.assertEqual(3, summary['serving_node'])
 
 
-#my class starts from here
+class test_pop_neighbour_stat(unittest.TestCase):
+    """ Tests for the static threshold, suggest to neighbour popularity table"""
+    @classmethod
+    def setUpClass(cls):
+        pass
 
+    @classmethod
+    def tearDownClass(cls):
+        pass    
+    
+    def setUp(self):
+        topology = nrr_topology()
+        model = NetworkModel(topology, 
+                             cache_policy={'name': 'POP_NEIGHBOUR_STAT'})
+        self.view = NetworkView(model)
+        self.controller = NetworkController(model)
+        self.collector = TestCollector(self.view)
+        self.controller.attach_collector(self.collector)
+        
+    def tearDown(self):
+        pass
+
+    def test_poptable(self):
+        hr = strategy.Pop_neighbour_stat(self.view, self.controller)
+        
+        # receiver 0 requests 2 from location 6, expect miss at all nodes
+	hr.process_event(1, 0, 2, True)
+        loc = self.view.content_locations(2)
+        self.assertEquals(len(loc), 1)
+        self.assertNotIn(1, loc)
+        self.assertNotIn(2, loc)
+        self.assertNotIn(3, loc)
+        self.assertNotIn(4, loc)
+	self.assertNotIn(5, loc)
+	self.assertIn(6, loc)
+        summary = self.collector.session_summary()
+        #check the requests took correct path
+        exp_req_hops = set([(4,6), (2, 4), (0, 2)])
+        #check content took correct path
+       	exp_cont_hops = set([(4, 2), (2, 0), (6, 4)])
+        req_hops = summary['request_hops']
+        cont_hops = summary['content_hops']
+        self.assertSetEqual(exp_req_hops, set(req_hops))
+        self.assertSetEqual(exp_cont_hops, set(cont_hops))
+        self.assertEqual(6, summary['serving_node'])
+
+	#run more requests than the threshold value for item 2
+        for i in range(0,self.view.get_threshold()):
+            hr.process_event(1, 0, 2, True)
+
+        #item 2 should now be everywhere but the requester (0) and node 1
+        loc = self.view.content_locations(2)
+        self.assertEquals(len(loc), 5)
+        self.assertNotIn(1, loc) #since not adjacent to any on-path nodes 
+        self.assertIn(2, loc)
+        self.assertIn(3, loc)
+        self.assertIn(4, loc)
+	self.assertIn(5, loc)
+	self.assertIn(6, loc)
+
+class test_pop_self_stat(unittest.TestCase):
+    """ Tests for the static threshold, self caching popularity table"""
+
+    @classmethod
+    def setUpClass(cls):
+        pass
+
+    @classmethod
+    def tearDownClass(cls):
+        pass    
+    
+    def setUp(self):
+        topology = nrr_topology()
+        model = NetworkModel(topology, 
+                             cache_policy={'name': 'POP_SELF_STAT'})
+        self.view = NetworkView(model)
+        self.controller = NetworkController(model)
+        self.collector = TestCollector(self.view)
+        self.controller.attach_collector(self.collector)
+        
+    def tearDown(self):
+        pass
+
+    def test_poptable(self):
+        hr = strategy.Pop_self_stat(self.view, self.controller)
+        
+	hr.process_event(1, 0, 2, True)
+        loc = self.view.content_locations(2)
+        self.assertEquals(len(loc), 1)
+        self.assertNotIn(1, loc)
+        self.assertNotIn(2, loc)
+        self.assertNotIn(3, loc)
+        self.assertNotIn(4, loc)
+	self.assertNotIn(5, loc)
+	self.assertIn(6, loc)
+        summary = self.collector.session_summary()
+        #check the requests took correct path
+        exp_req_hops = set([(4,6), (2, 4), (0, 2)])
+        #check content took correct path
+       	exp_cont_hops = set([(4, 2), (2, 0), (6, 4)])
+        req_hops = summary['request_hops']
+        cont_hops = summary['content_hops']
+        self.assertSetEqual(exp_req_hops, set(req_hops))
+        self.assertSetEqual(exp_cont_hops, set(cont_hops))
+        self.assertEqual(6, summary['serving_node'])
+
+	#run more requests than the threshold value for item 2
+        for i in range(0,self.view.get_threshold()):
+            hr.process_event(1, 0, 2, True)
+
+        #item 2 should now be everywhere on the path
+        loc = self.view.content_locations(2)
+        self.assertEquals(len(loc), 3)
+        self.assertNotIn(1, loc)
+        self.assertIn(2, loc)
+        self.assertNotIn(3, loc)
+        self.assertIn(4, loc)
+	self.assertNotIn(5, loc)
+	self.assertIn(6, loc)
+
+
+class test_pop_neighbour_t_stat(unittest.TestCase):
+    """ Tests for the static threshold, suggest to neighbour, 
+    with independent neighbour threshold rejection popularity table"""
+
+    @classmethod
+    def setUpClass(cls):
+        pass
+
+    @classmethod
+    def tearDownClass(cls):
+        pass    
+    
+    def setUp(self):
+        topology = t_stat_topology()
+        model = NetworkModel(topology, 
+                             cache_policy={'name': 'POP_NEIGHBOUR_T_STAT'})
+        self.view = NetworkView(model)
+        self.controller = NetworkController(model)
+        self.collector = TestCollector(self.view)
+        self.controller.attach_collector(self.collector)
+        
+    def tearDown(self):
+        pass
+
+    def test_poptable(self):
+        hr = strategy.Pop_neighbour_t_stat(self.view, self.controller)
+        
+        # receiver 0 requests 2 from location 6, expect miss at all nodes
+	hr.process_event(1, 1, 2, True)
+        loc = self.view.content_locations(2)
+        self.assertEquals(len(loc), 1)
+        self.assertNotIn(1, loc)
+        self.assertNotIn(2, loc)
+        self.assertNotIn(3, loc)
+        self.assertNotIn(4, loc)
+	self.assertNotIn(5, loc)
+	self.assertNotIn(7, loc)
+	self.assertNotIn(8, loc)
+	self.assertNotIn(9, loc)
+	self.assertNotIn(10, loc)
+	self.assertIn(6, loc)
+
+        summary = self.collector.session_summary()
+        #check the requests took correct path
+        exp_req_hops = set([(1,2), (2,3), (3,4), (4,5), (5,6)])
+        #check content took correct path
+       	exp_cont_hops = set([(6,5), (5,4), (4,3), (3,2), (2,1)])
+        req_hops = summary['request_hops']
+        cont_hops = summary['content_hops']
+        self.assertSetEqual(exp_req_hops, set(req_hops))
+        self.assertSetEqual(exp_cont_hops, set(cont_hops))
+        self.assertEqual(6, summary['serving_node'])
+	print "first session summary"
+
+	hr.process_event(1,9,2, True)
+        loc = self.view.content_locations(2)
+        summary = self.collector.session_summary()
+        #check the requests took correct path
+        exp_req_hops = set([(9,8), (8,3), (3,4), (4,5), (5,6)])
+        #check content took correct pat
+       	exp_cont_hops = set([(6,5), (5,4), (4,3), (3,8), (8,9)])
+        req_hops = summary['request_hops']
+        cont_hops = summary['content_hops']
+        self.assertSetEqual(exp_req_hops, set(req_hops))
+        self.assertSetEqual(exp_cont_hops, set(cont_hops))
+        self.assertEqual(6, summary['serving_node'])
+	print "second session summary"
+
+
+        for i in range(0,int(self.view.get_threshold() * 0.75)):
+            hr.process_event(1, 1, 2, True)
+
+        for k in range(0, int(self.view.get_threshold() * 0.25)):
+            hr.process_event(1, 9, 2, True)
+
+        #item 2 should be
+        loc = self.view.content_locations(2)
+        self.assertEquals(len(loc), 5)
+        self.assertNotIn(8, loc) 
+	self.assertNotIn(10, loc) 
+	self.assertNotIn(7, loc) 
+        self.assertIn(2, loc)
+        self.assertIn(3, loc)
+        self.assertIn(4, loc)
+	self.assertIn(5, loc)
+	self.assertIn(6, loc)
+
+
+class test_dyn_self(unittest.TestCase):
+    """ Tests for the static threshold, suggest to neighbour popularity table"""
+    @classmethod
+    def setUpClass(cls):
+        pass
+
+    @classmethod
+    def tearDownClass(cls):
+        pass    
+    
+    def setUp(self):
+        topology = t_stat_topology()
+        model = NetworkModel(topology, 
+                             cache_policy={'name': 'POP_SELF_DYN'})
+        self.view = NetworkView(model)
+        self.controller = NetworkController(model)
+        self.collector = TestCollector(self.view)
+        self.controller.attach_collector(self.collector)
+        
+    def tearDown(self):
+        pass
+
+    def test_poptable(self):
+        hr = strategy.Pop_self_dyn(self.view, self.controller)
+
+	hr.process_event(1, 1, 2, True)
+        loc = self.view.content_locations(2)
+        self.assertEquals(len(loc), 1)
+        self.assertNotIn(1, loc)
+        self.assertNotIn(2, loc)
+        self.assertNotIn(3, loc)
+        self.assertNotIn(4, loc)
+	self.assertNotIn(5, loc)
+	self.assertNotIn(7, loc)
+	self.assertIn(6, loc)
+        summary = self.collector.session_summary()
+        #check the requests took correct path
+        exp_req_hops = set([(1,2), (2,3), (3,4), (4,5), (5,6)])
+        #check content took correct path
+       	exp_cont_hops = set([(6,5), (5,4), (4,3), (3,2), (2,1)])
+        req_hops = summary['request_hops']
+        cont_hops = summary['content_hops']
+        self.assertSetEqual(exp_req_hops, set(req_hops))
+        self.assertSetEqual(exp_cont_hops, set(cont_hops))
+        self.assertEqual(6, summary['serving_node'])
+	print "first session summary"
+        
+	# content 2 should be on every node of the route
+        loc = self.view.content_locations(2)
+	self.assertEqual(len(loc),1)
+	t=self.view.get_threshold()
+        for i in range(1,105):
+	    hr.process_event(1, 1, 2, True)
+	loc = self.view.content_locations(2)
+	self.assertEqual(len(loc),5)
+	self.assertNotIn(1, loc)
+	self.assertIn(2, loc)
+	self.assertIn(3, loc)
+	self.assertIn(4, loc)
+	self.assertIn(5, loc)
+	self.assertIn(6, loc)
+	self.assertNotIn(7, loc)
+	self.assertNotIn(8, loc)
+	self.assertNotIn(9, loc)
+	self.assertNotIn(10, loc)
+	
+	hr.process_event(121,1,2,True)
+	for j in range(2,5):
+	    if j>2:    
+		self.assertEqual(self.view.get_threshold_v(j),102)	    	    
+   	    else:
+		self.assertEqual(self.view.get_threshold_v(j),106)	    	    
+
+		
+    def assert_threshold(self,t1, t2):
+	if t1==t2:
+	    return True
+	else:
+	    return False
+	
+class test_dyn_neighbour(unittest.TestCase):
+    """ Tests for the Dynamic threshold, suggest to neighbour popularity table"""
+    @classmethod
+    def setUpClass(cls):
+        pass
+
+    @classmethod
+    def tearDownClass(cls):
+        pass    
+    
+    def setUp(self):
+        topology = t_stat_topology()
+        model = NetworkModel(topology, 
+                             cache_policy={'name': 'POP_NEIGHBOUR_DYN'})
+        self.view = NetworkView(model)
+        self.controller = NetworkController(model)
+        self.collector = TestCollector(self.view)
+        self.controller.attach_collector(self.collector)
+        
+    def tearDown(self):
+        pass
+
+    def test_poptable(self):
+        hr = strategy.Pop_neighbour_dyn(self.view, self.controller)
+
+	hr.process_event(1, 1, 2, True)
+        loc = self.view.content_locations(2)
+        self.assertEquals(len(loc), 1)
+        self.assertNotIn(1, loc)
+        self.assertNotIn(2, loc)
+        self.assertNotIn(3, loc)
+        self.assertNotIn(4, loc)
+	self.assertNotIn(5, loc)
+	self.assertNotIn(7, loc)
+	self.assertIn(6, loc)
+        summary = self.collector.session_summary()
+        #check the requests took correct path
+        exp_req_hops = set([(1,2), (2,3), (3,4), (4,5), (5,6)])
+        #check content took correct path
+       	exp_cont_hops = set([(6,5), (5,4), (4,3), (3,2), (2,1)])
+        req_hops = summary['request_hops']
+        cont_hops = summary['content_hops']
+        self.assertSetEqual(exp_req_hops, set(req_hops))
+        self.assertSetEqual(exp_cont_hops, set(cont_hops))
+        self.assertEqual(6, summary['serving_node'])
+	print "first session summary"
+        
+	# content 2 should be on every node of the route
+        loc = self.view.content_locations(2)
+	self.assertEqual(len(loc),1)
+	
+        for i in range(1,105):
+	    hr.process_event(1, 1, 2, True)
+	loc = self.view.content_locations(2)
+	self.assertEqual(len(loc),7)
+	self.assertNotIn(1, loc)
+	self.assertIn(2, loc)
+	self.assertIn(3, loc)
+	self.assertIn(4, loc)
+	self.assertIn(5, loc)
+	self.assertIn(6, loc)
+	self.assertIn(7, loc)
+	self.assertIn(8, loc)
+	self.assertNotIn(9, loc)
+	self.assertNotIn(10, loc)
+	
+	hr.process_event(121,1,2,True)
+	for j in range(2,5):
+	    if j>2:    
+		self.assertEqual(self.view.get_threshold_v(j),102)	    	    
+   	    else:
+		self.assertEqual(self.view.get_threshold_v(j),106)	    	    
+
+		
+    def assert_threshold(self,t1, t2):
+	if t1==t2:
+	    return True
+	else:
+	    return False
+
+class test_dyn_neighbour_t(unittest.TestCase):
+    """ Tests for the dynamic threshold, suggest to neighbour popularity table"""
+    @classmethod
+    def setUpClass(cls):
+        pass
+
+    @classmethod
+    def tearDownClass(cls):
+        pass    
+    
+    def setUp(self):
+        topology = t_stat_topology()
+        model = NetworkModel(topology, 
+                             cache_policy={'name': 'POP_NEIGHBOUR_T_DYN'})
+        self.view = NetworkView(model)
+        self.controller = NetworkController(model)
+        self.collector = TestCollector(self.view)
+        self.controller.attach_collector(self.collector)
+        
+    def tearDown(self):
+        pass
+
+    def test_poptable(self):
+        hr = strategy.Pop_neighbour_t_dyn(self.view, self.controller)
+
+	hr.process_event(1, 1, 2, True)
+        loc = self.view.content_locations(2)
+        self.assertEquals(len(loc), 1)
+        self.assertNotIn(1, loc)
+        self.assertNotIn(2, loc)
+        self.assertNotIn(3, loc)
+        self.assertNotIn(4, loc)
+	self.assertNotIn(5, loc)
+	self.assertNotIn(7, loc)
+	self.assertIn(6, loc)
+        summary = self.collector.session_summary()
+        #check the requests took correct path
+        exp_req_hops = set([(1,2), (2,3), (3,4), (4,5), (5,6)])
+        #check content took correct path
+       	exp_cont_hops = set([(6,5), (5,4), (4,3), (3,2), (2,1)])
+        req_hops = summary['request_hops']
+        cont_hops = summary['content_hops']
+        self.assertSetEqual(exp_req_hops, set(req_hops))
+        self.assertSetEqual(exp_cont_hops, set(cont_hops))
+        self.assertEqual(6, summary['serving_node'])
+	print "first session summary"
+	# check the caching to neighbour mecahnism        
+        loc = self.view.content_locations(2)
+	self.assertEqual(len(loc),1)
+  
+        for i in range(0,int(self.view.get_threshold() * 0.75)):
+            hr.process_event(1, 1, 2, True)
+
+        for k in range(0, int(self.view.get_threshold() * 0.25)):
+            hr.process_event(1, 9, 2, True)
+
+        loc = self.view.content_locations(2)
+        self.assertEquals(len(loc), 5)
+        self.assertNotIn(8, loc) 
+	self.assertNotIn(10, loc) 
+	self.assertNotIn(7, loc) 
+        self.assertIn(2, loc)
+        self.assertIn(3, loc)
+        self.assertIn(4, loc)
+	self.assertIn(5, loc)
+	self.assertIn(6, loc)
+	
+	# check the udpate of threshold
+	hr.process_event(121,1,2,True)
+
+	self.assertEqual(self.view.get_threshold_v(2),100)	    	    		
+	self.assertEqual(self.view.get_threshold_v(3),102)	    	    		
+	self.assertEqual(self.view.get_threshold_v(4),102)	    	    		
+	self.assertEqual(self.view.get_threshold_v(5),102)	    	    		
+	self.assertEqual(self.view.get_threshold_v(7),100)	    	    		
+	self.assertEqual(self.view.get_threshold_v(8),100)	    	    		
+		
+    def assert_threshold(self,t1, t2):
+	if t1==t2:
+	    return True
+	else:
+	    return False
+	
+"""
 class TestOnPath2(unittest.TestCase):
 
     @classmethod
@@ -988,8 +1464,8 @@ class TestOffPath2(unittest.TestCase):
         self.assertIn(3, loc)
         self.assertIn(4, loc)
 	self.assertIn(5, loc)
-       
-
+"""       
+"""
 class TestNRR(unittest.TestCase):
 
     @classmethod
@@ -1050,7 +1526,8 @@ class TestNRR(unittest.TestCase):
         self.assertIn(4, loc)
 	self.assertIn(5, loc)
 	self.assertIn(6, loc)
-
+"""
+"""
 class TestLisa(unittest.TestCase):
 
     @classmethod
@@ -1115,8 +1592,8 @@ class TestLisa(unittest.TestCase):
 	self.assertIn(6, loc)
 	self.assertIn(7, loc)
 	self.assertIn(8, loc)
-
-
+"""
+"""
 class TestLisa2(unittest.TestCase):
 
     @classmethod
@@ -1173,8 +1650,8 @@ class TestLisa2(unittest.TestCase):
 	self.assertIn(6, loc)
 	self.assertIn(7, loc)
 	self.assertIn(8, loc)
-
-
+"""
+"""
 class TestWing(unittest.TestCase):
 
     @classmethod
@@ -1231,8 +1708,7 @@ class TestWing(unittest.TestCase):
 	self.assertIn(6, loc)
 	self.assertNotIn(7, loc)
 	self.assertIn(8, loc)
-
-       
+"""  
 
 
 

@@ -76,6 +76,7 @@ class NetworkView(object):
                              'NetworkModel')
         self.model = model
 
+
     def all_data_sources(self):
         """Return the dictionary of all content locations"""
         dic = self.model.content_source
@@ -124,7 +125,7 @@ class NetworkView(object):
             Origin node
         t : any hashable type
             Destination node
-        
+        POP_SELF_DYN'
         Returns
         -------
         shortest_path : list
@@ -251,6 +252,13 @@ class NetworkView(object):
         """
         if node in self.model.cache:
             return self.model.cache[node].has(content)
+    
+    def get_node_threshold(self, node):
+	return self.model.cache[node].threshold
+
+    def dump_node_poptable(self, node):
+	self.model.cache[node].dump_pop_table()
+
 
     def cache_dump(self, node):
         """Returns the dump of the content of a cache in a specific node
@@ -273,6 +281,9 @@ class NetworkView(object):
 
     def get_threshold(self):
         return self.model.cache[self.model.cache.keys()[0]].get_threshold()
+    
+    def get_threshold_v(self, v):
+	return self.model.cache[v].threshold
 
 class NetworkModel(object):
     """Models the internal state of the network.
@@ -581,6 +592,19 @@ class NetworkController(object):
     def restore_node(self, v):
         raise NotImplementedError('Method not yet implemented')
 
+    
+    # decrement the populariy of contents in every node
+    def decrement(self, amount, time):
+	for node in self.model.cache:
+	    self.model.cache[node].decrement(amount, time)
+
+    # update the RRT(Recent Request Time) and popularity for a particular piece of content
+    # Must call this alongside with controller.get_content for correct results
+    def cache_recent_update(self, node, time):
+	if node in self.model.cache:
+	    self.model.cache[node].increment(self.session['content'],time)
+
+    # popularity-based (cache: neighbour nodes)(no. of threshold: 1)
     def check_popularity_table(self, v):
 	if v in self.model.cache:
 	    if self.model.cache[v].compare_count(self.session['content']):
@@ -588,15 +612,21 @@ class NetworkController(object):
     	        for adj_nodes in adj:
 	            if adj_nodes in self.model.cache:
 	    	        self.put_content(adj_nodes)
-    
 
-    def decrement(self, amount, time):
-	for node in self.model.cache:
-	    self.model.cache[node].decrement(amount, time)
+    # popularity-based (cache: local node)(no. of threshold: 1)
+    def check_local_p(self,v):
+	if v in self.model.cache:
+	    if self.model.cache[v].compare_count(self.session['content']):
+		self.put_content(v)
+   
+    # popularity-based (cache: neighbour nodes)(no. of threshold: 2)
+    def check_neighbours_threshold(self, v):		
+	if v in self.model.cache:
+	    if self.model.cache[v].compare_count(self.session['content']):
+		adj = self.model.neighbours[v]
+		for adj_nodes in adj:
+		    if adj_nodes in self.model.cache:
+	    	        if self.model.cache[adj_nodes].pass_threshold_a(self.session['content']):
+  			    self.put_content(adj_nodes)
 
-    def cache_recent_update(self, node, time):
-	if node in self.model.cache:
-	    self.model.cache[node].increment(self.session['content'],time)
-	
 
-    

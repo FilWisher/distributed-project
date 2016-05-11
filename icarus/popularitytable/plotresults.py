@@ -51,8 +51,13 @@ STRATEGY_STYLE = {
          'HR_HYBRID_AM':    'c-s',
          'HR_HYBRID_SM':    'r-v',
          'LCE':             'b--p',
-         'LCD':             'c-s         d',
-         'POPULARITY_TABLE':'g-->',
+         'LCD':             'c--d',
+         'POP_SELF_STAT':    'g-->',
+         'POP_NEIGHBOUR_STAT':'b-->',
+         'POP_NEIGHBOUR_T_STAT':'r-->',
+         'POP_SELF_DYN':    'g-o',
+         'POP_NEIGHBOUR_DYN':'b-o',
+         'POP_NEIGHBOUR_T_DYN':'r-o',
          'PROB_CACHE':      'c--<',
          'RAND_CHOICE':     'r--<',
          'RAND_BERNOULLI':  'g--*',
@@ -69,7 +74,12 @@ STRATEGY_LEGEND = {
          'HR_MULTICAST':    'HR Multicast',         
          'HR_HYBRID_AM':    'HR Hybrid AM',
          'HR_HYBRID_SM':    'HR Hybrid SM',
-         'POPULARITY_TABLE':'POP',
+         'POP_SELF_STAT':        'Pop_self',
+	 'POP_NEIGHBOUR_STAT':   'Pop_neighbour',
+	 'POP_NEIGHBOUR_T_STAT': 'Pop_neighbour_t',
+         'POP_SELF_DYN':        'Pop_self',
+	 'POP_NEIGHBOUR_DYN':   'Pop_neighbour',
+	 'POP_NEIGHBOUR_T_DYN': 'Pop_neighbour_t',
          'PROB_CACHE':      'ProbCache',
          'RAND_CHOICE':     'Random (choice)',
          'RAND_BERNOULLI':  'Random (Bernoulli)',
@@ -79,13 +89,18 @@ STRATEGY_LEGEND = {
 
 # Color and hatch styles for bar charts of cache hit ratio and link load vs topology
 STRATEGY_BAR_COLOR = {
-    'LCE':              'k',
-    'LCD':              '0.4',
-    'NO_CACHE':         '0.5',
-    'HR_ASYMM':         '0.6',
-    'HR_SYMM':          '0.7',
-    'POPULARITY_TABLE': '0.8',
-    }
+    #'LCE':              'k',
+    #'LCD':              '0.1',
+    #'NO_CACHE':         '0.2',
+    #'HR_ASYMM':         '0.3',
+    #'HR_SYMM':          '0.4',
+    'POP_SELF_STAT':         '0.1',
+    'POP_NEIGHBOUR_STAT':    '0.2',
+    'POP_NEIGHBOUR_T_STAT':  '0.3',
+    'POP_SELF_DYN':         '0.4',
+    'POP_NEIGHBOUR_DYN':    '0.5',
+    'POP_NEIGHBOUR_T_DYN':  '0.6',
+     }
 
 STRATEGY_BAR_HATCH = {
     'LCE':              None,
@@ -93,7 +108,12 @@ STRATEGY_BAR_HATCH = {
     'NO_CACHE':         'x',
     'HR_ASYMM':         '+',
     'HR_SYMM':          '\\',
-    'POPULARITY_TABLE': '||',
+    'POP_SELF_STAT':         '||',
+    'POP_NEIGHBOUR_STAT':    '-',
+    'POP_NEIGHBOUR_T_STAT':  ' x',
+    'POP_SELF_DYN':         '\\',
+    'POP_NEIGHBOUR_DYN':    '+',
+    'POP_NEIGHBOUR_T_DYN':  '//',
     }
 
 
@@ -103,7 +123,7 @@ def plot_cache_hits_vs_alpha(resultset, topology, cache_size, alpha_range, strat
     desc = {}
     desc['title'] = 'Cache hit ratio: T=%s C=%s' % (topology, cache_size)
     desc['ylabel'] = 'Cache hit ratio'
-    desc['xlabel'] = u'Content distribution \u03b1'
+    desc['xlabel'] = 'Alpha'
     desc['xparam'] = ('workload', 'alpha')
     desc['xvals'] = alpha_range
     desc['filter'] = {'topology': {'name': topology},
@@ -147,7 +167,7 @@ def plot_cache_hits_vs_cache_size(resultset, topology, alpha, cache_size_range, 
 def plot_link_load_vs_alpha(resultset, topology, cache_size, alpha_range, strategies, plotdir):
     desc = {}
     desc['title'] = 'Internal link load: T=%s C=%s' % (topology, cache_size)
-    desc['xlabel'] = u'Content distribution \u03b1'
+    desc['xlabel'] = 'Alpha'
     desc['ylabel'] = 'Internal link load'
     desc['xparam'] = ('workload', 'alpha')
     desc['xvals'] = alpha_range
@@ -190,7 +210,7 @@ def plot_link_load_vs_cache_size(resultset, topology, alpha, cache_size_range, s
 def plot_latency_vs_alpha(resultset, topology, cache_size, alpha_range, strategies, plotdir):
     desc = {}
     desc['title'] = 'Latency: T=%s C=%s' % (topology, cache_size)
-    desc['xlabel'] = u'Content distribution \u03b1'
+    desc['xlabel'] = 'Alpha'
     desc['ylabel'] = 'Latency (ms)'
     desc['xparam'] = ('workload', 'alpha')
     desc['xvals'] = alpha_range
@@ -314,15 +334,17 @@ def run(config, results, plotdir):
     alphas = settings.ALPHA
     strategies = settings.STRATEGIES
      # Plot graphs
-    for cache_size in cache_sizes:
-	plot_cache_hits_vs_alpha(resultset, "GEANT", cache_size, alphas, strategies, plotdir)
-        plot_link_load_vs_alpha(resultset, "GEANT", cache_size, alphas, strategies, plotdir)
-        plot_latency_vs_alpha(resultset, "GEANT", cache_size, alphas, strategies, plotdir)
+    for topology in topologies:
+        for cache_size in cache_sizes:
+	    plot_cache_hits_vs_alpha(resultset, topology, cache_size, alphas, strategies, plotdir)
+   	    plot_link_load_vs_alpha(resultset, topology, cache_size, alphas, strategies, plotdir)
+	    plot_latency_vs_alpha(resultset, topology, cache_size, alphas, strategies, plotdir)
 
     for cache_size in cache_sizes:
         for alpha in alphas:
             plot_cache_hits_vs_topology(resultset, alpha, cache_size, topologies, strategies, plotdir)
             plot_link_load_vs_topology(resultset, alpha, cache_size, topologies, strategies, plotdir)
+
 
 
 def main():
